@@ -56,12 +56,7 @@ public class PostService {
     public PostReadRes readPost(Long postId){
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("해당 자료를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
-        return PostReadRes.builder()
-                .title(post.getTitle())
-                .content(post.getContent())
-                .likes(post.getLikes())
-                .comments(post.getComments())
-                .build();
+        return PostReadRes.from(post);
     }
 
     @Transactional(readOnly = true)
