@@ -30,7 +30,7 @@ public class PostReadController {
         Page<PostReadRes> posts = postService.readAllPosts(pageable);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/popular/posts")
+    @GetMapping("/popular/posts")  //매 일 단위로 10의 가장 좋아요가 많은 게시물을 표시
     public ResponseEntity<Page<PostReadRes>> readPopularPosts(@PageableDefault(size = 10) Pageable pageable) {
 
         Page<PostReadRes> posts = postService.readPopularPosts(pageable);
