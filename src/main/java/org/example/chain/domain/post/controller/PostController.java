@@ -6,7 +6,7 @@ import org.example.chain.domain.post.service.PostService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/post")
+@RequestMapping("api/posts")
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;

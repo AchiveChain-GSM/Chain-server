@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/post/read")
+@RequestMapping("/api/posts/read")
 @RequiredArgsConstructor
 public class PostReadController {
     private final PostService postService;
@@ -22,6 +22,7 @@ public class PostReadController {
     public PostReadRes readPost(@PathVariable Long postId){
         return postService.readPost(postId);
     }
+
     @GetMapping("/recent")
     public ResponseEntity<Page<PostReadRes>> readPosts(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
