@@ -14,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Getter
-@Setter
 @Table(name = "user")
 public class User {
     @Id
@@ -39,15 +38,16 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Post> post = new ArrayList<>();
 
-    public User(SignUpReq request){
+    public User(SignUpReq request, String password){
+        name = request.name();
         email = request.email();
-        password = request.password();
+        this.password = password;
         roles.add(request.role());
     }
 
-    public void update(UpdateReq request){
+    public void update(UpdateReq request, String password){
         email = request.email();
-        password = request.password();
+        this.password = password;
         roles = request.roles();
     }
 }
