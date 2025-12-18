@@ -43,9 +43,9 @@ public class Post {
     @Column(name = "comments")
     private Long comments;
 
-    @Column(name = "tags")
-    @ElementCollection(fetch = FetchType.EAGER)
-    private List<String> tags = new ArrayList<>();
+    @Builder.Default
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostTag> postTags = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)

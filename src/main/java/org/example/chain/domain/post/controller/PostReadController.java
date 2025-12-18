@@ -8,10 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/post/read")
@@ -23,11 +22,19 @@ public class PostReadController {
     public PostReadRes readPost(@PathVariable Long postId){
         return postService.readPost(postId);
     }
-    @GetMapping("/recent/posts")
+    @GetMapping("/recent")
     public ResponseEntity<Page<PostReadRes>> readPosts(
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable){
         Page<PostReadRes> posts = postService.readAllPosts(pageable);
         return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("/search")
+    public Page<PostReadRes> search(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) List<String> tags,
+            Pageable pageable) {
+        return postService.search(keyword, tags, pageable);
     }
 }
