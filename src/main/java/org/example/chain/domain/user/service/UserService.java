@@ -6,6 +6,7 @@ import org.example.chain.domain.user.data.request.UpdateReq;
 import org.example.chain.domain.user.data.response.UserRes;
 import org.example.chain.domain.user.entity.CustomUserDetails;
 import org.example.chain.domain.user.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.example.chain.domain.user.entity.User;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,17 +16,18 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public void createUser(SignUpReq request){
-        User user = new User(request);
+        User user = new User(request, passwordEncoder.encode(request.password()));
         userRepository.save(user);
     }
 
     @Transactional
     public UserRes readUser(Long id){
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(""));
+                .orElseThrow(() -> new IllegalArgumentException("해당하는 사용자 찾을 수 없음"));
         return new UserRes(user.getEmail());
     }
 
@@ -40,7 +42,7 @@ public class UserService {
     public void updateUser(UpdateReq request){
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException(""));
-        user.update(request);
+        user.update(request, passwordEncoder.encode(request.password()));
     }
 
     @Transactional
