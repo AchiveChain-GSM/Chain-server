@@ -47,4 +47,9 @@ public class PostService {
         return postRepository.findAll(pageable)
                 .map(PostReadRes::from);
     }
+    @Transactional
+    public Page<PostReadRes> readPopularPosts(Pageable pageable){
+        return postRepository.findPopularPost(pageable)
+                .map(PostReadRes::from);
+    }
 }

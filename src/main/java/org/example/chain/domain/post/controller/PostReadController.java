@@ -24,10 +24,18 @@ public class PostReadController {
         return postService.readPost(postId);
     }
     @GetMapping("/recent/posts")
-    public ResponseEntity<Page<PostReadRes>> readPosts(
+    public ResponseEntity<Page<PostReadRes>> readPosts( // 이건 이름 바꿀어ㅑ 잘못만듬
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable){
         Page<PostReadRes> posts = postService.readAllPosts(pageable);
         return ResponseEntity.ok(posts);
+    }
+    @GetMapping("/popular/posts")
+    public ResponseEntity<Page<PostReadRes>> readPopularPosts(@PageableDefault(size = 10) Pageable pageable) {
+
+        Page<PostReadRes> posts = postService.readPopularPosts(pageable);
+
+        return ResponseEntity.ok(posts);
+
     }
 }
