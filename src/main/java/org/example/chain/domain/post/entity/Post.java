@@ -56,4 +56,16 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PostComment> postComments = new ArrayList<>();
+
+    @ColumnDefault("0")
+    @Column(name = "views")
+    private Long views;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<PostView> postView = new ArrayList<>();
+
+
+    public void addViews() {
+        views++;
+    }
 }

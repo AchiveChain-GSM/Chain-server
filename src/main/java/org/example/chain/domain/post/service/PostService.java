@@ -31,8 +31,9 @@ public class PostService {
 
     @Transactional
     public PostReadRes readPost(Long postId){
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findPostByPostId(postId)
                 .orElseThrow(() -> new PostNotFoundException("해당 자료를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        post.addViews();
         return PostReadRes.builder()
                 .title(post.getTitle())
                 .content(post.getContent())
@@ -49,7 +50,7 @@ public class PostService {
     }
     @Transactional
     public Page<PostReadRes> readPopularPosts(Pageable pageable){
-        return postRepository.findPopularPost(pageable)
+        return postRepository.findPopularPosts(pageable)
                 .map(PostReadRes::from);
     }
 }
