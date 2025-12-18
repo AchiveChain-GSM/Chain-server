@@ -1,4 +1,6 @@
 package org.example.chain.domain.user.data.request;
 
-public record ChangeReq(String email) {
+import java.util.List;
+
+public record UpdateReq(String email, String password, List<String> roles) {
 }

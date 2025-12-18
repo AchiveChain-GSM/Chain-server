@@ -1,4 +1,4 @@
-package org.example.chain.domain.security.auth.filter;
+package org.example.chain.global.security.auth.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
-import org.example.chain.domain.security.auth.jwt.JwtProvider;
+import org.example.chain.global.security.auth.jwt.JwtProvider;
 
 @Component
 @RequiredArgsConstructor

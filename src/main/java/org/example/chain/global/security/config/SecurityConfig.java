@@ -1,4 +1,4 @@
-package org.example.chain.domain.security.config;
+package org.example.chain.global.security.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.example.chain.domain.security.auth.filter.JwtAuthFilter;
+import org.example.chain.global.security.auth.filter.JwtAuthFilter;
 
 @Configuration
 @RequiredArgsConstructor

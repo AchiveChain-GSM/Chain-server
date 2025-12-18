@@ -1,4 +1,4 @@
-package org.example.chain.domain.security.auth.jwt;
+package org.example.chain.global.security.auth.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

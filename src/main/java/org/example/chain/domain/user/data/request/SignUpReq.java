@@ -1,4 +1,4 @@
 package org.example.chain.domain.user.data.request;
 
-public record SignUpRequest(String email, String password, String role) {
+public record SignUpReq(String name, String email, String password, String role) {
 }
