@@ -26,7 +26,7 @@ public record PostReadRes(
                 post.getUser().getName(),
                 post.getLikes(),
                 post.getComments(),
-                post.getTags()
+                post.getPostTags().stream().map(postTag -> postTag.getTag().getName()).toList()
         );
     }
 }
