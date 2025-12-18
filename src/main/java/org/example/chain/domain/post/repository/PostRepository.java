@@ -26,7 +26,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
     SELECT DISTINCT p FROM Post p
     WHERE
-        (:keyword IS NOT NULL AND p.title LIKE %:keyword%)
+        (:keyword IS NOT NULL AND p.title LIKE CONCAT('%', :keyword, '%'))
         OR
         (
             p.id IN (
