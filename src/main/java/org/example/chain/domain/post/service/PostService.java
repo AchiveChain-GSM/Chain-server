@@ -79,7 +79,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllPostsInDuration(Instant from, Instant to, Pageable pageable){
-        return postRepository.findAllPostsByCreatedAtInDuration(from, to, pageable)
+        return postRepository.findAllPostsByCreateAtInDuration(from, to, pageable)
                 .map(PostReadRes::from);
     }
 
