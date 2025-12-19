@@ -9,11 +9,11 @@ import org.example.chain.domain.post.entity.Tag;
 import org.example.chain.domain.post.repository.PostRepository;
 import org.example.chain.domain.post.repository.TagRepository;
 import org.example.chain.global.error.exception.PostNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
-    private final TagRepository tagRepository;
+    private final TagService tagService;
 
     @Transactional
     public Long createPost(PostCreateReq request){
@@ -33,8 +33,7 @@ public class PostService {
                 .build();
 
         List<PostTag> postTags = request.tags().stream()
-                .map(tagName -> tagRepository.findByName(tagName)
-                        .orElseGet(() -> tagRepository.save(new Tag(tagName)))) // 없으면 생성
+                .map(tagService::getOrCreateTag) // TagService의 메서드 호출
                 .map(tag -> new PostTag(post, tag))
                 .toList();
 
