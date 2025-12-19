@@ -9,6 +9,7 @@ import org.example.chain.domain.post.entity.Tag;
 import org.example.chain.domain.post.repository.PostRepository;
 import org.example.chain.domain.post.repository.TagRepository;
 import org.example.chain.global.error.exception.PostNotFoundException;
+import org.example.chain.global.security.util.SecurityUtil;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -24,12 +25,14 @@ import java.util.List;
 public class PostService {
     private final PostRepository postRepository;
     private final TagService tagService;
+    private final SecurityUtil securityUtil;
 
     @Transactional
     public Long createPost(PostCreateReq request){
         Post post = Post.builder()
                 .title(request.title())
                 .content(request.content())
+                .user(securityUtil.getCurrentUser())
                 .build();
 
         List<PostTag> postTags = request.tags().stream()
