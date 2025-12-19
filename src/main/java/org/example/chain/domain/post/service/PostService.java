@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.chain.domain.post.data.req.PostCreateReq;
 import org.example.chain.domain.post.data.res.PostReadRes;
 import org.example.chain.domain.post.entity.Post;
+import org.example.chain.domain.post.repository.PostLikeRepository;
 import org.example.chain.domain.post.repository.PostRepository;
 import org.example.chain.domain.post.repository.PostViewRepository;
 import org.example.chain.global.error.exception.PostNotFoundException;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostService {
     private final PostRepository postRepository;
     private final PostViewRepository postViewRepository;
+    private final PostLikeRepository postLikeRepository;
 
     @Transactional
     public ResponseEntity<HttpStatus> createPost(PostCreateReq request){
@@ -61,8 +63,13 @@ public class PostService {
                 .map(PostReadRes::from);
     }
     @Transactional(readOnly = true)
-    public Page<PostReadRes> readAllWritedPosts(Pageable pageable, Long user_id){
+    public Page<PostReadRes> readAllWrittenPosts(Pageable pageable, Long user_id){
         return postRepository.findPostsByUserId(user_id, pageable).map(PostReadRes::from);
+    }
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> readAllLikedPosts(Pageable pageable, Long user_id){
+        return postLikeRepository.findLikedPostsByUserId(user_id, pageable)
+                .map(PostReadRes::from);
     }
 
 }

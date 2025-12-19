@@ -40,7 +40,7 @@ public class PostReadController {
         return ResponseEntity.ok(posts);
     }
 
-    @GetMapping("user-viewed/posts/{user_id}")
+    @GetMapping("user-viewed-posts/{user_id}")
     public ResponseEntity<Page<PostReadRes>> readUserViewedPosts(
             @PathVariable Long user_id,
             @PageableDefault(size = 20) Pageable pageable
@@ -49,12 +49,21 @@ public class PostReadController {
         return  ResponseEntity.ok(posts);
     }
 
-    @GetMapping("user-written/posts/{user_id}")
-    public ResponseEntity<Page<PostReadRes>> readUserWritedPosts(
+    @GetMapping("user-written-posts/{user_id}")
+    public ResponseEntity<Page<PostReadRes>> readUserWrittenPosts(
             @PathVariable Long user_id,
             @PageableDefault(size = 20) Pageable pageable
     ){
-        Page<PostReadRes> posts = postService.readAllWritedPosts(pageable, user_id);
+        Page<PostReadRes> posts = postService.readAllWrittenPosts(pageable, user_id);
+        return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("user-liked-posts/{user_id}")
+    public ResponseEntity<Page<PostReadRes>> readUserLikedPosts(
+            @PathVariable Long user_id,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        Page<PostReadRes> posts = postService.readAllLikedPosts(pageable, user_id);
         return ResponseEntity.ok(posts);
     }
 

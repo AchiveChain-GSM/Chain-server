@@ -1,6 +1,7 @@
 package org.example.chain.domain.post.entity;
 
 import jakarta.persistence.*;
+import org.example.chain.domain.user.entity.User;
 
 import java.time.Instant;
 
@@ -17,4 +18,8 @@ public class PostLike {
 
     @Column(name = "createAt")
     private Instant createAt;
+
+    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
 }
