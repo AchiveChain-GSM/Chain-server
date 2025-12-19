@@ -48,4 +48,14 @@ public class PostReadController {
         Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, user_id);
         return  ResponseEntity.ok(posts);
     }
+
+    @GetMapping("user-written/posts/{user_id}")
+    public ResponseEntity<Page<PostReadRes>> readUserWritedPosts(
+            @PathVariable Long user_id,
+            @PageableDefault(size = 20) Pageable pageable
+    ){
+        Page<PostReadRes> posts = postService.readAllWritedPosts(pageable, user_id);
+        return ResponseEntity.ok(posts);
+    }
+
 }

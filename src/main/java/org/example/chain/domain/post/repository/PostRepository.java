@@ -23,5 +23,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = "SELECT p FROM Post p WHERE p.id = :post_id")  //post_id를 통한 post 조회
     Optional<Post> findPostByPostId(@Param("post_id") Long post_id);
 
+    @Query("SELECT p FROM Post p WHERE p.user.id = :user_id")
+    Page<Post> findPostsByUserId(@Param(value = "user_id") Long user_id, Pageable pageable);
+
 
 }

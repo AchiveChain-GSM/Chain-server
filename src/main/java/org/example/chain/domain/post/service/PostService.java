@@ -60,5 +60,9 @@ public class PostService {
         return postViewRepository.findAllViewedPostsByUserId(pageable ,user_id)
                 .map(PostReadRes::from);
     }
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> readAllWritedPosts(Pageable pageable, Long user_id){
+        return postRepository.findPostsByUserId(user_id, pageable).map(PostReadRes::from);
+    }
 
 }
