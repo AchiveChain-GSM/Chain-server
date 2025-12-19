@@ -1,6 +1,7 @@
 package org.example.chain.domain.post.entity;
 
 import jakarta.persistence.*;
+import org.example.chain.domain.user.entity.User;
 
 import java.time.Instant;
 
@@ -17,4 +18,9 @@ public class PostView {
 
     @Column(name = "createAt")
     private Instant createAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",  nullable = true)
+    private User user;
+
 }
