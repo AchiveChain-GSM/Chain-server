@@ -5,12 +5,11 @@ import org.example.chain.domain.post.data.req.PostCreateReq;
 import org.example.chain.domain.post.data.res.PostReadRes;
 import org.example.chain.domain.post.entity.Post;
 import org.example.chain.domain.post.entity.PostTag;
-import org.example.chain.domain.post.entity.Tag;
+import org.example.chain.domain.post.repository.PostLikeRepository;
 import org.example.chain.domain.post.repository.PostRepository;
-import org.example.chain.domain.post.repository.TagRepository;
+import org.example.chain.domain.post.repository.PostViewRepository;
 import org.example.chain.global.error.exception.PostNotFoundException;
 import org.example.chain.global.security.util.SecurityUtil;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +26,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final TagService tagService;
     private final SecurityUtil securityUtil;
+    private final PostViewRepository postViewRepository;
+    private final PostLikeRepository postLikeRepository;
 
     @Transactional
     public Long createPost(PostCreateReq request){
@@ -88,5 +90,34 @@ public class PostService {
                 .toList();
 
         return new PageImpl<>(dto, pageable, postIdPage.getTotalElements());
+    }
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> readPopularPosts(Pageable pageable){
+        return postRepository.findPopularPosts(pageable)
+                .map(PostReadRes::from);
+    }
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> readAllViewedPosts(Pageable pageable, Long user_id){
+        return postViewRepository.findAllViewedPostsByUserId(pageable ,user_id)
+                .map(PostReadRes::from);
+    }
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> readAllViewedPostsSortRecentViewed(Pageable pageable, Long user_id){
+        return postViewRepository.findAllPostsByUserIdSortRecentViewed(pageable, user_id).map(PostReadRes::from);
+    }
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> readAllWrittenPosts(Pageable pageable, Long user_id){
+        return postRepository.findPostsByUserId(user_id, pageable).map(PostReadRes::from);
+    }
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> readAllLikedPosts(Pageable pageable, Long user_id){
+        return postLikeRepository.findLikedPostsByUserId(user_id, pageable)
+                .map(PostReadRes::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> readAllPostsInDuration(Instant from, Instant to, Pageable pageable){
+        return postRepository.findAllPostsByCreateAtInDuration(from, to, pageable)
+                .map(PostReadRes::from);
     }
 }

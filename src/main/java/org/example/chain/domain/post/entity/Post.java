@@ -39,7 +39,7 @@ public class Post {
 
     @ColumnDefault("0")
     @Column(name = "likes")
-    private Long likes;
+    private Long likes = 0L;
 
     @ColumnDefault("0")
     @Column(name = "comments")
@@ -58,4 +58,16 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PostComment> postComments = new ArrayList<>();
+
+    @ColumnDefault("0")
+    @Column(name = "views")
+    private Long views = 0L;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<PostView> postViews = new ArrayList<>();
+
+
+    public void addViews() {
+        views++;
+    }
 }
