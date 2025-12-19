@@ -27,6 +27,9 @@ public class JwtProvider {
         this.accessTokenValidity = accessTokenExpirationMinutes * 60 * 1000L;
         this.refreshTokenValidity = refreshTokenExpirationDays * 24 * 60 * 60 * 1000L;
         this.secretKey = getenv().get("KEY");
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new IllegalStateException("JWT 시크릿 키가 존재하지 않습니다.");
+        }
     }
 
 
