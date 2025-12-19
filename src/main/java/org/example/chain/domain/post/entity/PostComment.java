@@ -19,10 +19,10 @@ public class PostComment {
     @Column(name = "comment_id")
     private Long id;
 
-    @CreatedDate
     @Column(name = "content")
     private String content;
 
+    @CreatedDate
     @Column(name = "createAt")
     private Instant createAt;
 
