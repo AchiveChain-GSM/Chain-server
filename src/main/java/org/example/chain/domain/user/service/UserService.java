@@ -27,28 +27,28 @@ public class UserService {
     @Transactional
     public UserRes readUser(Long id){
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당하는 사용자 찾을 수 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이디의 사용자를 찾을 수 없음"));
         return new UserRes(user.getEmail());
     }
 
     @Transactional
     public CustomUserDetails readUser(String email){
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(""));
+                .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 사용자를 찾을 수 없음"));
         return new CustomUserDetails(user);
     }
 
     @Transactional
     public void updateUser(UpdateReq request){
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new IllegalArgumentException(""));
+                .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 사용자를 찾을 수 없음"));
         user.update(request, passwordEncoder.encode(request.password()));
     }
 
     @Transactional
     public void deleteUser(Long id){
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(""));
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이디의 사용자를 찾을 수 없음"));
         userRepository.delete(user);
     }
 }
