@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/posts/read")
+@RequestMapping("/api/posts")
 @RequiredArgsConstructor
 public class PostReadController {
     private final PostService postService;
 
-    @GetMapping("/id/{postId}")
+    @GetMapping("/{postId}")
     public PostReadRes readPost(@PathVariable Long postId){
         return postService.readPost(postId);
     }
