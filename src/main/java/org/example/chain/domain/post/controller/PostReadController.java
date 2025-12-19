@@ -32,10 +32,10 @@ public class PostReadController {
     }
 
     @GetMapping("/search")
-    public Page<PostReadRes> search(
+    public ResponseEntity<Page<PostReadRes>> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) List<String> tags,
             Pageable pageable) {
-        return postService.search(keyword, tags, pageable);
+        return ResponseEntity.ok(postService.search(keyword, tags, pageable));
     }
 }
