@@ -20,7 +20,7 @@ public class PostLike {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = true)
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
     @CreatedDate
