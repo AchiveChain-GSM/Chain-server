@@ -10,9 +10,10 @@ import org.example.chain.domain.post.repository.PostRepository;
 import org.example.chain.domain.post.repository.TagRepository;
 import org.example.chain.global.error.exception.PostNotFoundException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,6 @@ public class PostService {
                 .content(request.content())
                 .build();
 
-        // 태그 처리 로직
         List<PostTag> postTags = request.tags().stream()
                 .map(tagName -> tagRepository.findByName(tagName)
                         .orElseGet(() -> tagRepository.save(new Tag(tagName)))) // 없으면 생성
@@ -54,7 +54,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostReadRes readPost(Long postId){
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findByIdWithDetails(postId) // Fetch Join 버전 사용
                 .orElseThrow(() -> new PostNotFoundException("해당 자료를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         return PostReadRes.from(post);
     }
@@ -65,38 +65,26 @@ public class PostService {
                 .map(PostReadRes::from);
     }
 
-    public Page<PostReadRes> search(
-            String keyword,
-            List<String> tagNames,
-            Pageable pageable
-    ) {
-        boolean hasKeyword = keyword != null && !keyword.isBlank();
-        boolean hasTags = tagNames != null && !tagNames.isEmpty();
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> search(String keyword, List<String> tagNames, Pageable pageable) {
+        String searchKeyword = (keyword != null && !keyword.isBlank()) ? keyword : null;
+        List<String> searchTags = (tagNames != null && !tagNames.isEmpty()) ? tagNames : null;
+        Long tagCount = (searchTags != null) ? (long) searchTags.size() : 0L;
 
-        if (hasKeyword && hasTags) { // 둘다 안비었음
-            return postRepository
-                    .findByTitleOrAllTags(
-                            keyword,
-                            tagNames,
-                            tagNames.size(),
-                            pageable
-                    )
-                    .map(PostReadRes::from);
+        Page<Long> postIdPage = postRepository.findIdsBySearchCondition(
+                searchKeyword, searchTags, tagCount, pageable
+        );
+
+        if (postIdPage.isEmpty()) {
+            return Page.empty(pageable);
         }
 
-        if (hasKeyword) {
-            return postRepository
-                    .findByTitleContaining(keyword, pageable)
-                    .map(PostReadRes::from);
-        }
+        List<Post> posts = postRepository.findAllByIdsWithDetails(postIdPage.getContent());
 
-        if (hasTags) {
-            return postRepository
-                    .findByAllTagNames(tagNames, tagNames.size(), pageable)
-                    .map(PostReadRes::from);
-        }
+        List<PostReadRes> dto = posts.stream()
+                .map(PostReadRes::from)
+                .toList();
 
-        return postRepository.findAll(pageable)
-                .map(PostReadRes::from);
+        return new PageImpl<>(dto, pageable, postIdPage.getTotalElements());
     }
 }
