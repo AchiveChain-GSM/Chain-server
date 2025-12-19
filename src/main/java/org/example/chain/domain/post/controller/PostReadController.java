@@ -8,10 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/post/read")
@@ -41,5 +38,14 @@ public class PostReadController {
             Pageable pageable) {
         Page<PostReadRes> posts = postService.readAllPosts(pageable);
         return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("user-viewed/posts/{user_id}")
+    public ResponseEntity<Page<PostReadRes>> readUserViewedPosts(
+            @PathVariable Long user_id,
+            @PageableDefault(size = 20) Pageable pageable
+    ){
+        Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, user_id);
+        return  ResponseEntity.ok(posts);
     }
 }

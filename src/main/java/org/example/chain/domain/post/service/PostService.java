@@ -1,22 +1,24 @@
 package org.example.chain.domain.post.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.chain.domain.post.data.req.PostCreateReq;
 import org.example.chain.domain.post.data.res.PostReadRes;
 import org.example.chain.domain.post.entity.Post;
 import org.example.chain.domain.post.repository.PostRepository;
+import org.example.chain.domain.post.repository.PostViewRepository;
 import org.example.chain.global.error.exception.PostNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final PostViewRepository postViewRepository;
 
     @Transactional
     public ResponseEntity<HttpStatus> createPost(PostCreateReq request){
@@ -43,14 +45,20 @@ public class PostService {
                 .build();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<PostReadRes> readAllPosts(Pageable pageable){
         return postRepository.findAll(pageable)
                 .map(PostReadRes::from);
     }
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<PostReadRes> readPopularPosts(Pageable pageable){
         return postRepository.findPopularPosts(pageable)
                 .map(PostReadRes::from);
     }
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> readAllViewedPosts(Pageable pageable, Long user_id){
+        return postViewRepository.findAllViewedPostsByUserId(pageable ,user_id)
+                .map(PostReadRes::from);
+    }
+
 }
