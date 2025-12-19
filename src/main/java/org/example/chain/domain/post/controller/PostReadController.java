@@ -1,6 +1,7 @@
 package org.example.chain.domain.post.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.chain.domain.post.data.req.TimelinePostReq;
 import org.example.chain.domain.post.data.res.PostReadRes;
 import org.example.chain.domain.post.service.PostService;
 import org.springframework.data.domain.Page;
@@ -116,5 +117,16 @@ public class PostReadController {
         Page<PostReadRes> posts = postService.readAllLikedPosts(pageable, user_id);
         return ResponseEntity.ok(posts);
     }
+
+    @PostMapping("timeline/posts")
+    public ResponseEntity<Page<PostReadRes>> readTimelinePosts(
+            @RequestBody TimelinePostReq timelinePostReq,
+            @PageableDefault(size = 20) Pageable pageable) {
+
+        Page<PostReadRes> posts = postService.readAllPostsInDuration(timelinePostReq.from(), timelinePostReq.to(), pageable);
+        return ResponseEntity.ok(posts);
+
+    }
+
 
 }

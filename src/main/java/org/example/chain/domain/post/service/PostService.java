@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -75,5 +76,12 @@ public class PostService {
         return postLikeRepository.findLikedPostsByUserId(user_id, pageable)
                 .map(PostReadRes::from);
     }
+
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> readAllPostsInDuration(Instant from, Instant to, Pageable pageable){
+        return postRepository.findAllPostsByCreatedAtInDuration(from, to, pageable)
+                .map(PostReadRes::from);
+    }
+
 
 }

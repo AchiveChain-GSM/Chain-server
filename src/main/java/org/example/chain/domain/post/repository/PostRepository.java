@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
+import java.time.Instant;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
@@ -25,6 +26,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.user.id = :user_id")
     Page<Post> findPostsByUserId(@Param(value = "user_id") Long user_id, Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE (p.createAt >= :from) AND (p.createAt <= :to)")
+    Page<Post> findAllPostsByCreatedAtInDuration(@Param(value = "from") Instant from, @Param(value = "to") Instant to, Pageable pageable);
 
 
 }
