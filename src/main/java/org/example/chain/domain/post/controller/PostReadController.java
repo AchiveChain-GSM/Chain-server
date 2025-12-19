@@ -49,6 +49,32 @@ public class PostReadController {
         return  ResponseEntity.ok(posts);
     }
 
+    @GetMapping("user-viewed-posts/{user_id}/recentView")
+    public ResponseEntity<Page<PostReadRes>> readUserViewedPostsByRecentView(
+            @PathVariable Long user_id,
+            @PageableDefault(size = 20) Pageable pageable
+    ){
+        Page<PostReadRes> posts = postService.readAllViewedPostsSortRecentViewed(pageable, user_id);
+        return  ResponseEntity.ok(posts);
+    }
+    @GetMapping("user-viewed-posts/{user_id}/like")
+    public ResponseEntity<Page<PostReadRes>> readUserViewedPostsSortByLikes(
+            @PathVariable Long user_id,
+            @PageableDefault(size = 20, sort = "likes", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, user_id);
+        return  ResponseEntity.ok(posts);
+    }
+    @GetMapping("user-viewed-posts/{user_id}/views")
+    public ResponseEntity<Page<PostReadRes>> readUserViewedPostsByViews(
+            @PathVariable Long user_id,
+            @PageableDefault(size = 20, sort = "views", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, user_id);
+        return  ResponseEntity.ok(posts);
+    }
+
+
     @GetMapping("user-written-posts/{user_id}")
     public ResponseEntity<Page<PostReadRes>> readUserWrittenPosts(
             @PathVariable Long user_id,

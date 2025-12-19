@@ -63,6 +63,10 @@ public class PostService {
                 .map(PostReadRes::from);
     }
     @Transactional(readOnly = true)
+    public Page<PostReadRes> readAllViewedPostsSortRecentViewed(Pageable pageable, Long user_id){
+        return postViewRepository.findAllPostsByUserIdSortRecentViewed(pageable, user_id).map(PostReadRes::from);
+    }
+    @Transactional(readOnly = true)
     public Page<PostReadRes> readAllWrittenPosts(Pageable pageable, Long user_id){
         return postRepository.findPostsByUserId(user_id, pageable).map(PostReadRes::from);
     }
