@@ -13,11 +13,11 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    @Query(value = "SELECT p FROM Post p JOIN FETCH p.user ORDER BY FUNCTION('DATE', p.createAt) DESC , p.likes DESC",
+    @Query(value = "SELECT p FROM Post p JOIN p.user ORDER BY FUNCTION('DATE', p.createAt) DESC , p.likes DESC",
             countQuery = "SELECT count(p) FROM Post p")
     Page<Post> findPopularPosts(Pageable pageable);
 
-    @Query(value = "SELECT p FROM Post p JOIN FETCH p.user u WHERE u.name = :name",
+    @Query(value = "SELECT p FROM Post p JOIN p.user u WHERE u.name = :name",
             countQuery = "SELECT COUNT(p) FROM Post p JOIN p.user u WHERE u.name = :name")  //해당하는 이름의 작성자의 post 조회
     Page<Post> findPostsByUserName(@Param("name") String name, Pageable pageable);
 
