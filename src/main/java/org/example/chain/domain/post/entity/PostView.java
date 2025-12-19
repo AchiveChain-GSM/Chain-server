@@ -6,10 +6,10 @@ import org.example.chain.domain.user.entity.User;
 import java.time.Instant;
 
 @Entity
-public class PostLike {
+public class PostView {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "postLike_id")
+    @Column(name = "postView_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -19,7 +19,8 @@ public class PostLike {
     @Column(name = "createAt")
     private Instant createAt;
 
-    @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",  nullable = true)
     private User user;
+
 }

@@ -3,6 +3,8 @@ package org.example.chain.domain.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.chain.domain.post.entity.Post;
+import org.example.chain.domain.post.entity.PostLike;
+import org.example.chain.domain.post.entity.PostView;
 import org.example.chain.domain.user.data.request.SignUpReq;
 import org.example.chain.domain.user.data.request.UpdateReq;
 
@@ -38,6 +40,13 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Post> post = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<PostView> postViews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<PostLike> postLikes = new ArrayList<>();
+
 
     public User(SignUpReq request){
         email = request.email();
