@@ -31,6 +31,9 @@ public class Post {
     @Column(name = "content")
     private String content;
 
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<PostBlock> contents;
+
     @CreatedDate
     @Column(name = "createAt", updatable = false)
     private Instant createAt;
