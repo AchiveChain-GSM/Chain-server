@@ -56,10 +56,12 @@ public class PostService {
                 .map(PostReadRes::from);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PostReadRes readPost(Long postId){
-        Post post = postRepository.findByIdWithDetails(postId) // Fetch Join 버전 사용
-                .orElseThrow(() -> new PostNotFoundException("해당 자료를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        postRepository.updateViews(postId);
+
+        Post post = postRepository.findByIdWithDetails(postId)
+                .orElseThrow(() -> new PostNotFoundException("해당 자료를 찾을 수 없습니댜."));
         return PostReadRes.from(post);
     }
 
@@ -70,27 +72,32 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostReadRes> search(String keyword, List<String> tagNames, Pageable pageable) {
-        String searchKeyword = (keyword != null && !keyword.isBlank()) ? keyword : null;
-        List<String> searchTags = (tagNames != null && !tagNames.isEmpty()) ? tagNames : null;
-        Long tagCount = (searchTags != null) ? (long) searchTags.size() : 0L;
+    public Page<PostReadRes> search(String keyword, Pageable pageable) {
+        // 1. 키워드가 없으면 전체 조회, 있으면 통합 검색 수행
+        Page<Long> postIdPage;
 
-        Page<Long> postIdPage = postRepository.findIdsBySearchCondition(
-                searchKeyword, searchTags, tagCount, pageable
-        );
+        if (keyword == null || keyword.isBlank()) {
+            postIdPage = postRepository.findAll(pageable).map(Post::getId);
+        } else {
+            postIdPage = postRepository.findIdsByIntegratedSearch(keyword, pageable);
+        }
 
         if (postIdPage.isEmpty()) {
             return Page.empty(pageable);
         }
 
+        // 2. 검색된 ID들로 상세 정보(User, Tag) 페치 조인 조회
         List<Post> posts = postRepository.findAllByIdsWithDetails(postIdPage.getContent());
 
-        List<PostReadRes> dto = posts.stream()
+        // 3. Pageable 객체 내의 정렬 정보를 유지하며 DTO 변환
+        // (주의: findByIds는 순서가 섞일 수 있으므로 정렬이 중요하다면 추가 처리가 필요할 수 있습니다.)
+        List<PostReadRes> dtos = posts.stream()
                 .map(PostReadRes::from)
                 .toList();
 
-        return new PageImpl<>(dto, pageable, postIdPage.getTotalElements());
+        return new PageImpl<>(dtos, pageable, postIdPage.getTotalElements());
     }
+
     @Transactional(readOnly = true)
     public Page<PostReadRes> readPopularPosts(Pageable pageable){
         return postRepository.findPopularPosts(pageable)
@@ -103,11 +110,13 @@ public class PostService {
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllViewedPostsSortRecentViewed(Pageable pageable, Long user_id){
-        return postViewRepository.findAllPostsByUserIdSortRecentViewed(pageable, user_id).map(PostReadRes::from);
+        return postViewRepository.findAllPostsByUserIdSortRecentViewed(pageable, user_id)
+                .map(PostReadRes::from);
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllWrittenPosts(Pageable pageable, Long user_id){
-        return postRepository.findPostsByUserId(user_id, pageable).map(PostReadRes::from);
+        return postRepository.findPostsByUserId(user_id, pageable)
+                .map(PostReadRes::from);
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllLikedPosts(Pageable pageable, Long user_id){
