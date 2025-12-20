@@ -16,7 +16,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<HttpStatus> createUser (@RequestBody SignUpReq request){
+    public ResponseEntity<Void> createUser (@RequestBody SignUpReq request){
         userService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -26,7 +26,7 @@ public class UserController {
         return new ResponseEntity<>(userService.readUser(id), HttpStatus.OK);
     }
 
-    @PutMapping
+    @PutMapping("/me")
     public ResponseEntity<HttpStatus> updateUser(@RequestBody UpdateReq request){
         userService.updateUser(request);
         return new ResponseEntity<>(HttpStatus.OK);
