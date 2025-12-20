@@ -7,6 +7,7 @@ import org.example.chain.domain.post.entity.PostLike;
 import org.example.chain.domain.post.entity.PostView;
 import org.example.chain.domain.user.data.request.SignUpReq;
 import org.example.chain.domain.user.data.request.UpdateReq;
+import org.example.chain.domain.user.enums.Authority;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,16 +27,17 @@ public class User {
     @Column(name = "user_name", nullable = false)
     private String name;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "user_email", nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "Role")
     @ElementCollection(fetch = FetchType.LAZY)
-    private List<String> roles = new ArrayList<>();
+    private List<Authority> roles = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     private List<Post> post = new ArrayList<>();
@@ -47,10 +49,10 @@ public class User {
     private List<PostLike> postLikes = new ArrayList<>();
 
     public User(SignUpReq request, String password){
-        name = request.name();
-        email = request.email();
+        this.name = request.name();
+        this.email = request.email();
         this.password = password;
-        roles.add(request.role());
+        this.roles.add(Authority.valueOf(request.role()));
     }
 
     public void update(UpdateReq request, String password){
