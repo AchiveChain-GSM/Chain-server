@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -24,7 +23,6 @@ public class PostReadController {
     public PostReadRes readPost(@PathVariable Long postId){
         return postService.readPost(postId);
     }
-
     @GetMapping("/recent")
     public ResponseEntity<Page<PostReadRes>> readRecentPosts(
             @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC)
@@ -50,9 +48,10 @@ public class PostReadController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) List<String> tags,
             Pageable pageable) {
-        return ResponseEntity.ok(postService.search(keyword, tags, pageable));
+        return ResponseEntity.ok(postService.search(keyword, pageable));
     }
 
+    // 최근 본 자료
     @GetMapping("/user-viewed-posts/{user_id}")
     public ResponseEntity<Page<PostReadRes>> readUserViewedPosts(
             @PathVariable Long user_id,
@@ -61,7 +60,6 @@ public class PostReadController {
         Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, user_id);
         return  ResponseEntity.ok(posts);
     }
-
     @GetMapping("/user-viewed-posts/{user_id}/recentView")
     public ResponseEntity<Page<PostReadRes>> readUserViewedPostsSortByRecentView(
             @PathVariable Long user_id,
@@ -87,7 +85,7 @@ public class PostReadController {
         return  ResponseEntity.ok(posts);
     }
 
-
+    // 내가 작성한 자료
     @GetMapping("/user-written-posts/{user_id}")
     public ResponseEntity<Page<PostReadRes>> readUserWrittenPosts(
             @PathVariable Long user_id,
@@ -96,7 +94,7 @@ public class PostReadController {
         Page<PostReadRes> posts = postService.readAllWrittenPosts(pageable, user_id);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/user-written-posts/{user_id}/recentRitten")
+    @GetMapping("/user-written-posts/{user_id}/recentWritten")
     public ResponseEntity<Page<PostReadRes>> readUserWrittenPostsSortByRecentRitten(
             @PathVariable Long user_id,
             @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable
@@ -121,6 +119,7 @@ public class PostReadController {
         return ResponseEntity.ok(posts);
     }
 
+    // 내가 좋아요 누른 자요
     @GetMapping("/user-liked-posts/{user_id}")
     public ResponseEntity<Page<PostReadRes>> readUserLikedPosts(
             @PathVariable Long user_id,
@@ -130,15 +129,12 @@ public class PostReadController {
         return ResponseEntity.ok(posts);
     }
 
+    // 타임라인
     @PostMapping("/timeline/posts")
     public ResponseEntity<Page<PostReadRes>> readTimelinePosts(
             @RequestBody TimelinePostReq timelinePostReq,
             @PageableDefault(size = 20) Pageable pageable) {
-
         Page<PostReadRes> posts = postService.readAllPostsInDuration(timelinePostReq.from(), timelinePostReq.to(), pageable);
         return ResponseEntity.ok(posts);
-
     }
-
-
 }
