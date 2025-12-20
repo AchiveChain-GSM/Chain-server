@@ -23,7 +23,7 @@ public class PostComment {
     private String content;
 
     @CreatedDate
-    @Column(name = "createAt")
+    @Column(name = "createAt", updatable = false)
     private Instant createAt;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -25,7 +25,7 @@ public class PostLike {
     private Post post;
 
     @CreatedDate
-    @Column(name = "createAt")
+    @Column(name = "createAt", updatable = false)
     private Instant createAt;
 
     @JoinColumn(name = "user_id")
