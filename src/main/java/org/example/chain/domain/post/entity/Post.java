@@ -43,7 +43,7 @@ public class Post {
 
     @ColumnDefault("0")
     @Column(name = "comments")
-    private Long comments;
+    private Long comments = 0L;
 
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -65,9 +65,4 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PostView> postViews = new ArrayList<>();
-
-
-    public void addViews() {
-        views++;
-    }
 }
