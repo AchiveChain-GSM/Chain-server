@@ -81,10 +81,10 @@ public class PostService {
 
     @Transactional
     public PostReadRes readPost(Long postId){
-        postRepository.updateViews(postId);
-
         Post post = postRepository.findByIdWithDetails(postId)
                 .orElseThrow(() -> new PostNotFoundException("해당 자료를 찾을 수 없습니댜."));
+
+        postRepository.updateViews(postId);
         return PostReadRes.from(post);
     }
 
