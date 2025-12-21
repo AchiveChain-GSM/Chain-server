@@ -46,6 +46,10 @@ public class Post {
     @Column(name = "comments")
     private Long comments = 0L;
 
+    @ColumnDefault("0")
+    @Column(name = "favorites")
+    private Long favorites = 0L;
+
     @Builder.Default
     @BatchSize(size = 100) // postTags를 조회할 때 최대 100개씩 IN 쿼리로 묶어서 가져옴
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -60,6 +64,9 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PostComment> postComments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<PostComment> postFavorite = new ArrayList<>();
 
     @ColumnDefault("0")
     @Column(name = "views")
