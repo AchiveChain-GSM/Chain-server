@@ -33,6 +33,9 @@ public class S3Service {
     public String upload(MultipartFile file, String dirName) {
         String originalFilename = file.getOriginalFilename();
 
+        if (originalFilename == null || originalFilename.lastIndexOf('.') == -1) {
+            throw new PostImageUploadFailedException("잘못된 파일 이름입니다. 확장자가 필요합니다.");
+        }
         String extension =
                 originalFilename.substring(originalFilename.lastIndexOf('.') + 1).toLowerCase();
         String key = dirName + "/" + UUID.randomUUID() + "." + extension;
