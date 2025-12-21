@@ -37,13 +37,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE p.id = :postId")
     Optional<Post> findByIdWithDetails(@Param("postId") Long postId);
 
-    @Query("SELECT DISTINCT p FROM Post p " +
-            "LEFT JOIN FETCH p.user " +
-            "LEFT JOIN FETCH p.postTags pt " +
-            "LEFT JOIN FETCH pt.tag " +
-            "WHERE p.id IN :ids")
-    List<Post> findAllByIdsWithDetails(@Param("ids") List<Long> ids);
-
     @Query(value = "SELECT p FROM Post p JOIN p.user ORDER BY FUNCTION('DATE', p.createAt) DESC , p.likes DESC",
             countQuery = "SELECT count(p) FROM Post p")
     Page<Post> findPopularPosts(Pageable pageable);
@@ -60,14 +53,31 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("UPDATE Post p SET p.views = p.views + 1 WHERE p.id = :postId")
     void updateViews(@Param("postId") Long postId);
 
-    // 키워드에 제목이나 태그 둘 중 하나라도 포함되는 자료 가져오기
+    // 1. 상세 정보를 한 번에 가져오는 전용 쿼리 (N+1 방지 핵심)
     @Query("""
-        SELECT DISTINCT p.id 
-        FROM Post p
+        SELECT DISTINCT p FROM Post p
+        JOIN FETCH p.user
+        LEFT JOIN FETCH p.postTags pt
+        LEFT JOIN FETCH pt.tag
+        WHERE p.id IN :ids
+    """)
+    List<Post> findAllByIdsWithDetails(@Param("ids") List<Long> ids);
+
+    // 2. 검색 시 ID만 가져오기 (기존 유지)
+    @Query("""
+        SELECT DISTINCT p.id FROM Post p
         LEFT JOIN p.postTags pt
         LEFT JOIN pt.tag t
         WHERE p.title LIKE CONCAT('%', :keyword, '%')
            OR t.name LIKE CONCAT('%', :keyword, '%')
     """)
     Page<Long> findIdsByIntegratedSearch(@Param("keyword") String keyword, Pageable pageable);
+
+    // 3. 전체 목록 조회 시 ID만 가져오는 메서드 추가
+    @Query("SELECT p.id FROM Post p")
+    Page<Long> findAllIds(Pageable pageable);
+
+    // 4. 특정 유저의 글 ID만 가져오기
+    @Query("SELECT p.id FROM Post p WHERE p.user.id = :userId")
+    Page<Long> findIdsByUserId(@Param("userId") Long userId, Pageable pageable);
 }
