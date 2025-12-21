@@ -70,13 +70,16 @@ public class PostService {
 
         // [Step 2] 가져온 ID들로 상세 데이터(User, Tag)를 JOIN FETCH로 한 번에 조회
         List<Post> posts = postRepository.findAllByIdsWithDetails(postIdPage.getContent());
+        java.util.Map<Long, Post> postMap = posts.stream()
+                .collect(java.util.stream.Collectors.toMap(Post::getId, p -> p));
 
         // [Step 3] DTO 변환 (이미 메모리에 데이터가 다 있어서 쿼리 안나감)
-        List<PostReadRes> dtos = posts.stream()
+        List<PostReadRes> dto = postIdPage.getContent().stream()
+                .map(postMap::get)
                 .map(PostReadRes::from)
                 .toList();
 
-        return new PageImpl<>(dtos, pageable, postIdPage.getTotalElements());
+        return new PageImpl<>(dto, pageable, postIdPage.getTotalElements());
     }
 
     @Transactional
