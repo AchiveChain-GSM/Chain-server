@@ -1,5 +1,5 @@
 package org.example.chain.domain.user.enums;
 
 public enum Authority {
-    STUDENT, GRADUATE, ADMIN
+    ROLE_STUDENT, ROLE_GRADUATE, ROLE_ADMIN
 }

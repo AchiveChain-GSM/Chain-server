@@ -12,28 +12,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/post/read")
+@RequestMapping("/api/posts")
 @RequiredArgsConstructor
 public class PostReadController {
     private final PostService postService;
 
-    @GetMapping("/id/{postId}")
-    public PostReadRes readPost(@PathVariable Long postId){
-        return postService.readPost(postId);
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostReadRes> readPost(@PathVariable Long postId){
+        return ResponseEntity.ok(postService.readPost(postId));
     }
-    @GetMapping("/recent/posts")
+    @GetMapping("/recent")
     public ResponseEntity<Page<PostReadRes>> readRecentPosts(
             @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC)
             Pageable pageable){
         Page<PostReadRes> posts = postService.readAllPosts(pageable);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/popular/posts")
+    @GetMapping("/popular")
     public ResponseEntity<Page<PostReadRes>> readPopularPosts(@PageableDefault(size = 20) Pageable pageable) {
         Page<PostReadRes> posts = postService.readPopularPosts(pageable);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/most-view/posts")
+    @GetMapping("/most-view")
     public ResponseEntity<Page<PostReadRes>> readMostViewPosts(
             @PageableDefault(size = 20, sort = "views", direction = Sort.Direction.DESC)
             Pageable pageable) {
@@ -41,92 +41,98 @@ public class PostReadController {
         return ResponseEntity.ok(posts);
     }
 
-    @GetMapping("/user-viewed-posts/{user_id}")
-    public ResponseEntity<Page<PostReadRes>> readUserViewedPosts(
-            @PathVariable Long user_id,
-            @PageableDefault(size = 20) Pageable pageable
-    ){
-        Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, user_id);
-        return  ResponseEntity.ok(posts);
+    // 검색 엔진
+    @GetMapping("/search")
+    public ResponseEntity<Page<PostReadRes>> search(
+            @RequestParam(required = false) String keyword,
+            Pageable pageable) {
+        return ResponseEntity.ok(postService.search(keyword, pageable));
     }
 
-    @GetMapping("/user-viewed-posts/{user_id}/recentView")
-    public ResponseEntity<Page<PostReadRes>> readUserViewedPostsSortByRecentView(
-            @PathVariable Long user_id,
+    // 최근 본 자료
+    @GetMapping("/viewed/{userId}")
+    public ResponseEntity<Page<PostReadRes>> readUserViewedPosts(
+            @PathVariable Long userId,
             @PageableDefault(size = 20) Pageable pageable
     ){
-        Page<PostReadRes> posts = postService.readAllViewedPostsSortRecentViewed(pageable, user_id);
+        Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, userId);
         return  ResponseEntity.ok(posts);
     }
-    @GetMapping("/user-viewed-posts/{user_id}/likes")
+    @GetMapping("/viewed/{userId}/recentView")
+    public ResponseEntity<Page<PostReadRes>> readUserViewedPostsSortByRecentView(
+            @PathVariable Long userId,
+            @PageableDefault(size = 20) Pageable pageable
+    ){
+        Page<PostReadRes> posts = postService.readAllViewedPostsSortRecentViewed(pageable, userId);
+        return  ResponseEntity.ok(posts);
+    }
+    @GetMapping("/viewed/{userId}/likes")
     public ResponseEntity<Page<PostReadRes>> readUserViewedPostsSortByLikes(
-            @PathVariable Long user_id,
+            @PathVariable Long userId,
             @PageableDefault(size = 20, sort = "likes", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, user_id);
+        Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, userId);
         return  ResponseEntity.ok(posts);
     }
-    @GetMapping("/user-viewed-posts/{user_id}/views")
+    @GetMapping("/viewed/{userId}/views")
     public ResponseEntity<Page<PostReadRes>> readUserViewedPostsByViews(
-            @PathVariable Long user_id,
+            @PathVariable Long userId,
             @PageableDefault(size = 20, sort = "views", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, user_id);
+        Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, userId);
         return  ResponseEntity.ok(posts);
     }
 
-
-    @GetMapping("/user-written-posts/{user_id}")
+    // 내가 작성한 자료
+    @GetMapping("/written/{userId}")
     public ResponseEntity<Page<PostReadRes>> readUserWrittenPosts(
-            @PathVariable Long user_id,
+            @PathVariable Long userId,
             @PageableDefault(size = 20) Pageable pageable
     ){
-        Page<PostReadRes> posts = postService.readAllWrittenPosts(pageable, user_id);
+        Page<PostReadRes> posts = postService.readAllWrittenPosts(pageable, userId);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/user-written-posts/{user_id}/recentRitten")
+    @GetMapping("/written/{userId}/recentWritten")
     public ResponseEntity<Page<PostReadRes>> readUserWrittenPostsSortByRecentRitten(
-            @PathVariable Long user_id,
+            @PathVariable Long userId,
             @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        Page<PostReadRes> posts = postService.readAllWrittenPosts(pageable, user_id);
+        Page<PostReadRes> posts = postService.readAllWrittenPosts(pageable, userId);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/user-written-posts/{user_id}/likes")
+    @GetMapping("/written/{userId}/likes")
     public ResponseEntity<Page<PostReadRes>> readUserWrittenPostsSortByLikes(
-            @PathVariable Long user_id,
+            @PathVariable Long userId,
             @PageableDefault(size = 20, sort = "likes", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        Page<PostReadRes> posts = postService.readAllWrittenPosts(pageable, user_id);
+        Page<PostReadRes> posts = postService.readAllWrittenPosts(pageable, userId);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/user-written-posts/{user_id}/views")
+    @GetMapping("/written/{userId}/views")
     public ResponseEntity<Page<PostReadRes>> readUserWrittenPostsSortByViews(
-            @PathVariable Long user_id,
+            @PathVariable Long userId,
             @PageableDefault(size = 20, sort = "views", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        Page<PostReadRes> posts = postService.readAllWrittenPosts(pageable, user_id);
+        Page<PostReadRes> posts = postService.readAllWrittenPosts(pageable, userId);
         return ResponseEntity.ok(posts);
     }
 
-    @GetMapping("/user-liked-posts/{user_id}")
+    // 내가 좋아요 누른 자요
+    @GetMapping("/liked/{userId}")
     public ResponseEntity<Page<PostReadRes>> readUserLikedPosts(
-            @PathVariable Long user_id,
+            @PathVariable Long userId,
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        Page<PostReadRes> posts = postService.readAllLikedPosts(pageable, user_id);
+        Page<PostReadRes> posts = postService.readAllLikedPosts(pageable, userId);
         return ResponseEntity.ok(posts);
     }
 
-    @PostMapping("/timeline/posts")
+    // 타임라인
+    @GetMapping("/timeline/posts")
     public ResponseEntity<Page<PostReadRes>> readTimelinePosts(
             @RequestBody TimelinePostReq timelinePostReq,
             @PageableDefault(size = 20) Pageable pageable) {
-
         Page<PostReadRes> posts = postService.readAllPostsInDuration(timelinePostReq.from(), timelinePostReq.to(), pageable);
         return ResponseEntity.ok(posts);
-
     }
-
-
 }

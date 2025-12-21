@@ -7,6 +7,7 @@ import org.example.chain.domain.post.entity.PostLike;
 import org.example.chain.domain.post.entity.PostView;
 import org.example.chain.domain.user.data.request.SignUpReq;
 import org.example.chain.domain.user.data.request.UpdateReq;
+import org.example.chain.domain.user.enums.Authority;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Getter
-@Setter
 @Table(name = "user")
 public class User {
     @Id
@@ -27,16 +27,17 @@ public class User {
     @Column(name = "user_name", nullable = false)
     private String name;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "user_email", nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "Role")
-    @ElementCollection(fetch = FetchType.EAGER)
-    private List<String> roles = new ArrayList<>();
+    @ElementCollection(fetch = FetchType.LAZY)
+    private List<Authority> roles = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     private List<Post> post = new ArrayList<>();
@@ -47,16 +48,16 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<PostLike> postLikes = new ArrayList<>();
 
-
-    public User(SignUpReq request){
-        email = request.email();
-        password = request.password();
-        roles.add(request.role());
+    public User(SignUpReq request, String password){
+        this.name = request.name();
+        this.email = request.email();
+        this.password = password;
+        this.roles.add(Authority.valueOf(request.role()));
     }
 
-    public void update(UpdateReq request){
+    public void update(UpdateReq request, String password){
         email = request.email();
-        password = request.password();
+        this.password = password;
         roles = request.roles();
     }
 }
