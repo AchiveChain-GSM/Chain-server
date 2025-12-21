@@ -1,4 +1,8 @@
 package org.example.chain.domain.user.data.request;
 
-public record ChangeReq(String email) {
+import org.example.chain.domain.user.enums.Authority;
+
+import java.util.List;
+
+public record UpdateReq(String email, String password, List<Authority> roles) {
 }
