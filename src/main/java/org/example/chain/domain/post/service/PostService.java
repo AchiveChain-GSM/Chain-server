@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.example.chain.domain.post.data.req.PostCreateReq;
 import org.example.chain.domain.post.data.res.PostReadRes;
 import org.example.chain.domain.post.entity.Post;
+import org.example.chain.domain.post.entity.PostLike;
 import org.example.chain.domain.post.entity.PostTag;
 import org.example.chain.domain.post.repository.PostLikeRepository;
 import org.example.chain.domain.post.repository.PostRepository;
 import org.example.chain.domain.post.repository.PostViewRepository;
+import org.example.chain.domain.user.entity.User;
 import org.example.chain.global.error.exception.PostNotFoundException;
 import org.example.chain.global.security.util.SecurityUtil;
 import org.springframework.data.domain.Page;
@@ -121,5 +123,18 @@ public class PostService {
     public Page<PostReadRes> readAllPostsInDuration(Instant from, Instant to, Pageable pageable){
         return postRepository.findAllPostsByCreateAtInDuration(from, to, pageable)
                 .map(PostReadRes::from);
+    }
+
+    @Transactional
+    public void toggleLike(Long postId) {
+        User user = securityUtil.getCurrentUser();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("게시글 없음"));
+
+        postLikeRepository.findByPostIdAndUserId(postId, user.getId())
+                .ifPresentOrElse(
+                        postLikeRepository::delete,
+                        () -> postLikeRepository.save(new PostLike(post, user))
+                );
     }
 }
