@@ -11,8 +11,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
@@ -47,7 +45,6 @@ public class PostReadController {
     @GetMapping("/search")
     public ResponseEntity<Page<PostReadRes>> search(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) List<String> tags,
             Pageable pageable) {
         return ResponseEntity.ok(postService.search(keyword, pageable));
     }
@@ -131,7 +128,7 @@ public class PostReadController {
     }
 
     // 타임라인
-    @PostMapping("/timeline/posts")
+    @GetMapping("/timeline/posts")
     public ResponseEntity<Page<PostReadRes>> readTimelinePosts(
             @RequestBody TimelinePostReq timelinePostReq,
             @PageableDefault(size = 20) Pageable pageable) {
