@@ -1,9 +1,15 @@
 package org.example.chain.domain.post.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 import org.example.chain.domain.post.enums.BlockType;
 
 @Entity
+@Builder
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"post_id", "sort_order"})})
 public class PostBlock {
 
@@ -36,5 +42,6 @@ public class PostBlock {
 
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
+
 
 }

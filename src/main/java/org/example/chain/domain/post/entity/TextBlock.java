@@ -1,9 +1,17 @@
 package org.example.chain.domain.post.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.chain.domain.post.enums.TextStyleType;
 
 @Entity
+@Builder
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class TextBlock {
 
     @Id

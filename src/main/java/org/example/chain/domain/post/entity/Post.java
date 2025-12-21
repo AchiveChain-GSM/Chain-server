@@ -32,6 +32,7 @@ public class Post {
     private String content;
 
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OrderBy("sortOrder ASC")
     private List<PostBlock> contents;
 
     @CreatedDate
