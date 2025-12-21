@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.chain.domain.user.entity.User;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -46,6 +47,7 @@ public class Post {
     private Long comments = 0L;
 
     @Builder.Default
+    @BatchSize(size = 100) // postTags를 조회할 때 최대 100개씩 IN 쿼리로 묶어서 가져옴
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostTag> postTags = new ArrayList<>();
 
