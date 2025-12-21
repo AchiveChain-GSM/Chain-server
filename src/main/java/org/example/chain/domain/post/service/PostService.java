@@ -63,46 +63,7 @@ public class PostService {
             createBlockByType(postBlockReg.blockType(), postBlock, postBlockReg);
 
         }
-
-
-
         return postRepository.save(post).getId();
-    }
-
-    // 통합 검색 (N+1 해결 버전)
-    public Page<PostReadRes> search(String keyword, Pageable pageable) {
-        // [Step 1] 조건에 맞는 ID들만 페이징해서 가져옴 (매우 빠름)
-        Page<Long> postIdPage = postRepository.findIdsByIntegratedSearch(keyword, pageable);
-
-        return convertToDtoPage(postIdPage, pageable);
-    }
-
-    // 전체 조회 (N+1 해결 버전)
-    public Page<PostReadRes> readAllPosts(Pageable pageable) {
-        // [Step 1] ID들만 페이징 조회
-        Page<Long> postIdPage = postRepository.findAllIds(pageable);
-
-        return convertToDtoPage(postIdPage, pageable);
-    }
-
-    // 공통 변환 로직 (2단계 조회)
-    private Page<PostReadRes> convertToDtoPage(Page<Long> postIdPage, Pageable pageable) {
-        if (postIdPage.isEmpty()) {
-            return Page.empty(pageable);
-        }
-
-        // [Step 2] 가져온 ID들로 상세 데이터(User, Tag)를 JOIN FETCH로 한 번에 조회
-        List<Post> posts = postRepository.findAllByIdsWithDetails(postIdPage.getContent());
-        java.util.Map<Long, Post> postMap = posts.stream()
-                .collect(java.util.stream.Collectors.toMap(Post::getId, p -> p));
-
-        // [Step 3] DTO 변환 (이미 메모리에 데이터가 다 있어서 쿼리 안나감)
-        List<PostReadRes> dto = postIdPage.getContent().stream()
-                .map(postMap::get)
-                .map(PostReadRes::from)
-                .toList();
-
-        return new PageImpl<>(dto, pageable, postIdPage.getTotalElements());
     }
 
     void createBlockByType(BlockType blockType, PostBlock postBlock, PostBlockReq postBlockReq) {
@@ -145,11 +106,11 @@ public class PostService {
                                 .listItems(
                                         postBlockReq.listBlockReq().contents().stream()
                                                 .map(textBlockReq ->
-                                                    ListItem.builder().
-                                                            content(textBlockReq.content())
-                                                            .textStyleType(textBlockReq.textStyle())
-                                                            .itemOrder(count.getAndIncrement())
-                                                            .build()
+                                                        ListItem.builder().
+                                                                content(textBlockReq.content())
+                                                                .textStyleType(textBlockReq.textStyle())
+                                                                .itemOrder(count.getAndIncrement())
+                                                                .build()
                                                 ).toList()
                                 )
                                 .build()
@@ -174,8 +135,43 @@ public class PostService {
     }
 
 
+    @Transactional
+    // 통합 검색 (N+1 해결 버전)
+    public Page<PostReadRes> search(String keyword, Pageable pageable) {
+        // [Step 1] 조건에 맞는 ID들만 페이징해서 가져옴 (매우 빠름)
+        Page<Long> postIdPage = postRepository.findIdsByIntegratedSearch(keyword, pageable);
 
+        return convertToDtoPage(postIdPage, pageable);
+    }
 
+    @Transactional
+    // 전체 조회 (N+1 해결 버전)
+    public Page<PostReadRes> readAllPosts(Pageable pageable) {
+        // [Step 1] ID들만 페이징 조회
+        Page<Long> postIdPage = postRepository.findAllIds(pageable);
+
+        return convertToDtoPage(postIdPage, pageable);
+    }
+
+    // 공통 변환 로직 (2단계 조회)
+    private Page<PostReadRes> convertToDtoPage(Page<Long> postIdPage, Pageable pageable) {
+        if (postIdPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        // [Step 2] 가져온 ID들로 상세 데이터(User, Tag)를 JOIN FETCH로 한 번에 조회
+        List<Post> posts = postRepository.findAllByIdsWithDetails(postIdPage.getContent());
+        java.util.Map<Long, Post> postMap = posts.stream()
+                .collect(java.util.stream.Collectors.toMap(Post::getId, p -> p));
+
+        // [Step 3] DTO 변환 (이미 메모리에 데이터가 다 있어서 쿼리 안나감)
+        List<PostReadRes> dto = postIdPage.getContent().stream()
+                .map(postMap::get)
+                .map(PostReadRes::from)
+                .toList();
+
+        return new PageImpl<>(dto, pageable, postIdPage.getTotalElements());
+    }
     @Transactional
     public PostReadRes readPost(Long postId){
         Post post = postRepository.findByIdWithDetails(postId)
