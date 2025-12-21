@@ -20,8 +20,8 @@ public class PostReadController {
     private final PostService postService;
 
     @GetMapping("/{postId}")
-    public PostReadRes readPost(@PathVariable Long postId){
-        return postService.readPost(postId);
+    public ResponseEntity<PostReadRes> readPost(@PathVariable Long postId){
+        return ResponseEntity.ok(postService.readPost(postId));
     }
     @GetMapping("/recent")
     public ResponseEntity<Page<PostReadRes>> readRecentPosts(
@@ -30,12 +30,12 @@ public class PostReadController {
         Page<PostReadRes> posts = postService.readAllPosts(pageable);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/popular/posts")
+    @GetMapping("/popular")
     public ResponseEntity<Page<PostReadRes>> readPopularPosts(@PageableDefault(size = 20) Pageable pageable) {
         Page<PostReadRes> posts = postService.readPopularPosts(pageable);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/most-view/posts")
+    @GetMapping("/most-view")
     public ResponseEntity<Page<PostReadRes>> readMostViewPosts(
             @PageableDefault(size = 20, sort = "views", direction = Sort.Direction.DESC)
             Pageable pageable) {
@@ -43,6 +43,7 @@ public class PostReadController {
         return ResponseEntity.ok(posts);
     }
 
+    // 검색 엔진
     @GetMapping("/search")
     public ResponseEntity<Page<PostReadRes>> search(
             @RequestParam(required = false) String keyword,
