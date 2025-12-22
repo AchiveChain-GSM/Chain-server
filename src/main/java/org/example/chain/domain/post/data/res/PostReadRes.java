@@ -16,7 +16,6 @@ public record PostReadRes(
         Instant createAt,
         String name,
         Long likes,
-        Long comments,
         List<String> tags) {
 
     public static PostReadRes from(Post post, List<PostBlockRes> contents) {
@@ -28,7 +27,6 @@ public record PostReadRes(
                 post.getCreateAt(),
                 post.getUser().getName(),
                 post.getLikes(),
-                post.getComments(),
                 post.getPostTags().stream().map(postTag -> postTag.getTag().getName()).toList()
         );
     }
