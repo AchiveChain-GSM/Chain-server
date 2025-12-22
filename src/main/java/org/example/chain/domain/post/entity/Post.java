@@ -78,6 +78,4 @@ public class Post {
     @JoinColumn(name = "image_id")
     private List<Image> images = new ArrayList<>();
 
-
-
 }
