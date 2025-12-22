@@ -16,12 +16,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+
 public class EmailService {
     private final JavaMailSender mailSender;
     private final EmailVerificationTokenRepository tokenRepository;
-    private final UserRepository userRepository;
 
+    @Transactional
     public String createVerificationToken(User user) {
         String token = UUID.randomUUID().toString();
 
@@ -36,6 +36,7 @@ public class EmailService {
         return token;
     }
 
+    @Transactional
     public void verifyToken(String token) {
         EmailVerificationToken verificationToken =
                 tokenRepository.findByToken(token)
