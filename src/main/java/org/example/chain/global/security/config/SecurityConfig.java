@@ -37,7 +37,8 @@ public class SecurityConfig {
 
                 // HTTP 요청에 대한 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/login", "api/auth/sign-up",
+                                "api/auth/send-email", "api/auth/verify-email").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

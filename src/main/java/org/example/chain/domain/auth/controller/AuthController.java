@@ -56,8 +56,7 @@ public class AuthController {
 
     @PostMapping("/change-password")
     public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordReq request){
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+        User user = securityUtil.getCurrentUser();
 
         user.update(passwordEncoder.encode(request.password()));
         return ResponseEntity.created(java.net.URI.create("/api/auth/login")).build();
