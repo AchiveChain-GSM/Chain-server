@@ -2,6 +2,7 @@ package org.example.chain.domain.post.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.chain.domain.user.entity.User;
@@ -34,4 +35,11 @@ public class PostComment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Builder
+    public PostComment(Post post, User user, String content) {
+        this.post = post;
+        this.user = user;
+        this.content = content;
+    }
 }
