@@ -28,7 +28,7 @@ public class PostBookmark {
     @Column(name = "createAt", updatable = false)
     private Instant createAt;
 
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
