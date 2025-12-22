@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.example.chain.domain.post.data.req.PostUpdateReq;
 import org.example.chain.domain.user.entity.User;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.ColumnDefault;
@@ -75,7 +76,16 @@ public class Post {
     private List<PostView> postViews = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @JoinColumn(name = "image_id")
     private List<Image> images = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<PostReport>  postReports = new ArrayList<>();
+
+    public void updatePost(PostUpdateReq postUpdateReq) {
+        this.title = postUpdateReq.title();
+        this.description = postUpdateReq.description();
+        this.content = postUpdateReq.content();
+    }
+
 
 }

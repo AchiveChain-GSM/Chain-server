@@ -1,16 +1,16 @@
 package org.example.chain.domain.post.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.chain.domain.post.data.req.PostReportReq;
+import org.example.chain.domain.post.data.req.PostUpdateReq;
 import org.example.chain.domain.post.entity.PostBookmark;
 import org.example.chain.domain.post.data.req.PostCreateReq;
 import org.example.chain.domain.post.data.res.PostReadRes;
 import org.example.chain.domain.post.entity.*;
 import org.example.chain.domain.post.data.res.*;
-import org.example.chain.domain.post.repository.PostBookmarkRepository;
-import org.example.chain.domain.post.repository.PostLikeRepository;
-import org.example.chain.domain.post.repository.PostRepository;
-import org.example.chain.domain.post.repository.PostViewRepository;
+import org.example.chain.domain.post.repository.*;
 import org.example.chain.domain.user.entity.User;
+import org.example.chain.domain.user.repository.UserRepository;
 import org.example.chain.global.error.exception.PostNotFoundException;
 import org.example.chain.global.s3.S3Service;
 import org.example.chain.global.security.util.SecurityUtil;
@@ -24,7 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,11 +36,16 @@ public class PostService {
     private final SecurityUtil securityUtil;
     private final PostViewRepository postViewRepository;
     private final PostLikeRepository postLikeRepository;
+    private final PostReportRepository postReportRepository;
+    private final ImageRepository imageRepository;
+    private final UserRepository userRepository;
     private final S3Service s3Service;
     private final PostBookmarkRepository bookmarkRepository;
+    private final TagRepository tagRepository;
+    private final PostTagRepository postTagRepository;
 
     @Transactional
-    public Long createPost(PostCreateReq request){
+    public Long createPost(PostCreateReq request, Long user_id){
         Post post = Post.builder()
                 .title(request.title())
                 .content(request.content())
@@ -48,7 +55,11 @@ public class PostService {
 
         List<PostTag> postTags = request.tags().stream()
                 .map(tagService::getOrCreateTag) // TagService의 메서드 호출
-                .map(tag -> new PostTag(post, tag))
+                .map(tag -> {
+                    PostTag postTag = new PostTag(post, tag);
+                    postTagRepository.save(postTag);
+                    return postTag;
+                })
                 .toList();
 
         post.getPostTags().addAll(postTags);
@@ -56,12 +67,14 @@ public class PostService {
         List<Image> images = new ArrayList<>();
         for(var imageFile : request.images()) {
 
-            String imageKey = s3Service.upload(imageFile, "posts");
+            String imageKey = s3Service.upload(imageFile, user_id.toString());
 
             Image image = Image.builder()
                     .imageKey(imageKey)
                     .imageName(imageFile.getOriginalFilename())
                     .build();
+            imageRepository.save(image);
+
             images.add(image);
         }
         post.getImages().addAll(images);
@@ -69,10 +82,8 @@ public class PostService {
         return postRepository.save(post).getId();
     }
 
-    List<String> getImageUrls(Post post) {
-        return post.getImages().stream().map(image -> {
-            return s3Service.generateGetUrl(image.getImageKey());
-        }).toList();
+    Map<Long, String> getImageUrls(Post post) {
+        return post.getImages().stream().collect(Collectors.toMap(Image::getImage_id, image -> s3Service.generateGetUrl(image.getImageKey())));
     }
 
     String getFirstImageUrl(Post post) {
@@ -85,6 +96,110 @@ public class PostService {
 
     boolean isBookmarked(Long postId, Long userId) {
         return postLikeRepository.existsByPostIdAndUserId(postId, userId);
+    }
+
+    @Transactional
+    public void reportPost(PostReportReq postReportReq, Long user_id) {
+
+        Post post = postRepository.findPostById(postReportReq.post_id());
+        User user = userRepository.getById(user_id);
+
+        PostReport postReport = PostReport.builder()
+                        .title(postReportReq.title())
+                        .description(postReportReq.description())
+                        .post(post)
+                        .user(user)
+                        .build();
+
+        post.getPostReports().add(postReport);
+
+        postReportRepository.save(postReport);
+
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostReportRes> readReport(Pageable pageable, Long user_id) {
+
+        Page<PostReport> postReport = postReportRepository.findPostReportByUserId(user_id, pageable);
+        return postReport.map(pr -> {
+            return PostReportRes.builder()
+                    .post_id(pr.getPost().getId())
+                    .title(pr.getTitle())
+                    .description(pr.getDescription())
+                    .build();
+        });
+    }
+
+
+    @Transactional
+    public void deleteReport(Long postReport_id) {
+
+        Post post = postRepository.findPostById(postReport_id);
+
+        PostReport postReport = post.getPostReports().stream()
+                .filter(pr -> pr.getReport_id().equals(postReport_id))
+                .findFirst()
+                .orElseThrow();
+
+        post.getPostReports().remove(postReport);
+
+    }
+
+    @Transactional
+    public void updatePost(PostUpdateReq postUpdateReq, Long user_id) {
+        Post post = postRepository.findPostById(postUpdateReq.post_id());
+
+        post.updatePost(postUpdateReq);
+
+        post.getPostTags().clear();
+
+        List<PostTag> postTags = new ArrayList<>();
+        for(String tagName : postUpdateReq.tags()) {
+            Tag tag = tagRepository.findByName(tagName).orElseGet(
+                    () -> {
+                        Tag t = new Tag(tagName);
+                        tagRepository.save(t);
+                        return t;
+                    }
+            );
+
+            PostTag postTag = new PostTag(post, tag);
+            postTagRepository.save(postTag);
+            postTags.add(postTag);
+        }
+
+        removeImagesById(postUpdateReq.removeImage_ids());
+
+        List<Image> images = new ArrayList<>();
+        for(var imageFile : postUpdateReq.images()) {
+            String imageKey = s3Service.upload(imageFile, user_id.toString());
+            imageRepository.save(
+                    Image.builder()
+                    .imageKey(imageKey)
+                    .imageName(imageFile.getOriginalFilename())
+                    .post(post)
+                    .build()
+            );
+        }
+    }
+
+    void removeImagesById (List<Long> image_ids) {
+        for(var remove_id : image_ids) {
+            Image image = imageRepository.findByImage_id(remove_id);
+            s3Service.delete(image.getImageKey());
+            imageRepository.delete(image);
+        }
+    }
+
+
+    public void deletePost(Long post_id) {
+
+        Post post = postRepository.getPostById(post_id);
+
+        removeImagesById(post.getImages().stream()
+                .map(Image::getImage_id).toList());
+        postRepository.delete(post);
+
     }
 
 

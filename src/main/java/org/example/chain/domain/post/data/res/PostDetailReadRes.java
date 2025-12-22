@@ -5,6 +5,7 @@ import org.example.chain.domain.post.entity.Post;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @Builder
 public record PostDetailReadRes(
@@ -14,13 +15,13 @@ public record PostDetailReadRes(
         Instant createAt,
         String content,
         List<String> tags,
-        List<String> images,
+        Map<Long, String> images,
         Long likes,
         Long bookmarks,
         Long views,
         List<PostCommentReadRes> comments)
 {
-    public static PostDetailReadRes from (Post post, List<String> images) {
+    public static PostDetailReadRes from (Post post, Map<Long, String> images) {
         return new PostDetailReadRes( post.getId(), post.getTitle(),
                 post.getUser().getName(),
                 post.getCreateAt(),
