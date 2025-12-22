@@ -3,6 +3,7 @@ package org.example.chain.domain.post.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.chain.domain.post.data.req.PostCreateReq;
 import org.example.chain.domain.post.data.req.PostReportReq;
+import org.example.chain.domain.post.data.req.PostUpdateReq;
 import org.example.chain.domain.post.data.res.PostReportRes;
 import org.example.chain.domain.post.service.PostService;
 import org.springframework.data.domain.Page;
@@ -18,24 +19,43 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
     private final PostService postService;
 
-    @PostMapping("/create")
-    public ResponseEntity<Void> createPost(@RequestBody PostCreateReq request){
-        Long postId = postService.createPost(request);
+    @PostMapping("/create/{user_id}")
+    public ResponseEntity<Void> createPost(
+            @PathVariable Long user_id,
+            @RequestBody PostCreateReq request){
+        Long postId = postService.createPost(request, user_id);
         return ResponseEntity.created(java.net.URI.create("/api/posts/" + postId)).build();
     }
 
+    @PostMapping("/update/{user_id}")
+    public ResponseEntity<Void> updatePost(
+        @PathVariable Long user_id,
+        @RequestBody PostUpdateReq updateRequest
+    ){
+        postService.updatePost(updateRequest, user_id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/delete/{post_id}")
+    public ResponseEntity<Void> deletePost(
+            @PathVariable Long post_id
+    ){
+        postService.deletePost(post_id);
+        return ResponseEntity.ok().build();
+    }
+
+
     @PostMapping("/reportCreate/{user_id}")
-    public ResponseEntity<Void> reportPost (
+    public ResponseEntity<Void> createReportPost (
             @PathVariable Long user_id,
             @RequestBody PostReportReq report
             ) {
-
         postService.reportPost(report, user_id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/reportRead/{user_id}")
-    public ResponseEntity<Page<PostReportRes>> readPost (
+    public ResponseEntity<Page<PostReportRes>> readReportPost (
             @PathVariable Long user_id,
             @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
@@ -45,7 +65,7 @@ public class PostController {
     }
 
     @GetMapping("/reportDelete/{post_id}")
-    public ResponseEntity<Void> deletePost (
+    public ResponseEntity<Void> deleteReportPost (
             @PathVariable Long post_id
     ){
         postService.deleteReport(post_id);
