@@ -154,8 +154,14 @@ public class PostService {
 
         bookmarkRepository.findByPostIdAndUserId(postId, user.getId())
                 .ifPresentOrElse(
-                        bookmarkRepository::delete,
-                        () -> bookmarkRepository.save(new PostBookmark(post, user))
+                        bookmark -> {
+                            bookmarkRepository.delete(bookmark);
+                            bookmarkRepository.minusBookmark(postId);
+                        },
+                        () -> {
+                            bookmarkRepository.save(new PostBookmark(post, user));
+                            bookmarkRepository.addBookmark(postId);
+                        }
                 );
     }
 }
