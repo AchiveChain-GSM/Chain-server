@@ -43,10 +43,6 @@ public class Post {
     private Long likes = 0L;
 
     @ColumnDefault("0")
-    @Column(name = "comments")
-    private Long comments = 0L;
-
-    @ColumnDefault("0")
     @Column(name = "bookmarks")
     private Long bookmarks = 0L;
 
