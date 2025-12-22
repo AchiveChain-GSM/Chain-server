@@ -30,6 +30,6 @@ public interface PostLikeRepository extends JpaRepository<PostLike,Long> {
     void addLikes(@Param("postId") Long postId);
 
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE Post p SET p.likes = p.likes + 1 WHERE p.id = :postId")
+    @Query("UPDATE Post p SET p.likes = p.likes - 1 WHERE p.id = :postId")
     void minusLikes(@Param("postId") Long postId);
 }
