@@ -53,12 +53,13 @@ public class PostReadController {
     @GetMapping("/viewed/{userId}")
     public ResponseEntity<Page<PostReadRes>> readUserViewedPosts(
             @PathVariable Long userId,
-            @PageableDefault(size = 20) Pageable pageable
+            @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC)
+            Pageable pageable
     ){
         Page<PostReadRes> posts = postService.readAllViewedPosts(pageable, userId);
         return  ResponseEntity.ok(posts);
     }
-    @GetMapping("/viewed/{userId}/recentView")
+    @GetMapping("/viewed/{userId}/recent")
     public ResponseEntity<Page<PostReadRes>> readUserViewedPostsSortByRecentView(
             @PathVariable Long userId,
             @PageableDefault(size = 20) Pageable pageable
@@ -92,7 +93,7 @@ public class PostReadController {
         Page<PostReadRes> posts = postService.readAllWrittenPosts(pageable, userId);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/written/{userId}/recentWritten")
+    @GetMapping("/written/{userId}/recent")
     public ResponseEntity<Page<PostReadRes>> readUserWrittenPostsSortByRecentRitten(
             @PathVariable Long userId,
             @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable
@@ -128,10 +129,9 @@ public class PostReadController {
     }
 
     // 타임라인
-    @GetMapping("/timeline/posts")
+    @PostMapping("/timeline")
     public ResponseEntity<Page<PostReadRes>> readTimelinePosts(
-            @RequestBody TimelinePostReq timelinePostReq,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @RequestBody TimelinePostReq timelinePostReq, Pageable pageable) {
         Page<PostReadRes> posts = postService.readAllPostsInDuration(timelinePostReq.from(), timelinePostReq.to(), pageable);
         return ResponseEntity.ok(posts);
     }

@@ -12,16 +12,16 @@ import java.time.Instant;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class PostLike {
+public class PostFavorite {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "postLike_id")
+    @Column(name = "postFavorite_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
+    @JoinColumn(name = "postFavorite_id", nullable = false)
     private Post post;
 
     @CreatedDate
@@ -31,9 +31,5 @@ public class PostLike {
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
-
-    public PostLike(Post post, User user){
-        this.post = post;
-        this.user = user;
-    }
 }
+

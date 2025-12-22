@@ -3,12 +3,17 @@ package org.example.chain.domain.post.service;
 import lombok.RequiredArgsConstructor;
 import org.example.chain.domain.post.data.req.PostBlockReq;
 import org.example.chain.domain.post.data.req.PostCreateReq;
+import org.example.chain.domain.post.data.res.PostReadRes;
+import org.example.chain.domain.post.entity.Post;
+import org.example.chain.domain.post.entity.PostLike;
+import org.example.chain.domain.post.entity.PostTag;
 import org.example.chain.domain.post.data.res.*;
 import org.example.chain.domain.post.entity.*;
 import org.example.chain.domain.post.enums.BlockType;
 import org.example.chain.domain.post.repository.PostLikeRepository;
 import org.example.chain.domain.post.repository.PostRepository;
 import org.example.chain.domain.post.repository.PostViewRepository;
+import org.example.chain.domain.user.entity.User;
 import org.example.chain.global.error.exception.PostNotFoundException;
 import org.example.chain.global.s3.S3Service;
 import org.example.chain.global.security.util.SecurityUtil;
@@ -22,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -273,5 +279,23 @@ public class PostService {
                 .map(post -> {
                     return PostReadRes.from(post, getContentsByPost(post));
                 });
+    }
+
+    @Transactional
+    public void toggleLike(Long postId) {
+        User user = securityUtil.getCurrentUser();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("게시글 없음"));
+
+        Optional<PostLike> postLikeOptional = postLikeRepository.findByPostIdAndUserId(postId, user.getId());
+
+        if (postLikeOptional.isPresent()) {
+            postLikeRepository.delete(postLikeOptional.get());
+            postLikeRepository.addLikes(postId);
+        } else {
+            PostLike newLike = new PostLike(post, user);
+            postLikeRepository.save(newLike);
+            postLikeRepository.minusLikes(postId);
+        }
     }
 }
