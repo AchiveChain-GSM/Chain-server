@@ -66,7 +66,7 @@ public class Post {
     private List<PostComment> postComments = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<PostComment> postFavorite = new ArrayList<>();
+    private List<PostBookmark> postBookmark = new ArrayList<>();
 
     @ColumnDefault("0")
     @Column(name = "views")
