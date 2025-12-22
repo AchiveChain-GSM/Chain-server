@@ -12,7 +12,7 @@ public record PostDetailReadRes(
         String title,
         String author,
         Instant createAt,
-        List<PostBlockRes> contents,
+        String content,
         List<String> tags,
         List<String> images,
         Long likes,
@@ -20,11 +20,11 @@ public record PostDetailReadRes(
         Long views,
         List<PostCommentReadRes> comments)
 {
-    public static PostDetailReadRes from (Post post, List<PostBlockRes> contents, List<String> images) {
+    public static PostDetailReadRes from (Post post, List<String> images) {
         return new PostDetailReadRes( post.getId(), post.getTitle(),
                 post.getUser().getName(),
                 post.getCreateAt(),
-                contents,
+                post.getContent(),
                 post.getPostTags().stream().map(postTag -> postTag.getTag().getName()).toList(),
                 images,
                 post.getLikes(),

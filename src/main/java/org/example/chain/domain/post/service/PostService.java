@@ -2,11 +2,9 @@ package org.example.chain.domain.post.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.chain.domain.post.entity.PostBookmark;
-import org.example.chain.domain.post.data.req.PostBlockReq;
 import org.example.chain.domain.post.data.req.PostCreateReq;
 import org.example.chain.domain.post.data.res.PostReadRes;
 import org.example.chain.domain.post.entity.*;
-import org.example.chain.domain.post.enums.BlockType;
 import org.example.chain.domain.post.data.res.*;
 import org.example.chain.domain.post.repository.PostBookmarkRepository;
 import org.example.chain.domain.post.repository.PostLikeRepository;
@@ -27,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +42,7 @@ public class PostService {
         Post post = Post.builder()
                 .title(request.title())
                 .content(request.content())
+                .description(request.description())
                 .user(securityUtil.getCurrentUser())
                 .build();
 
@@ -54,19 +52,6 @@ public class PostService {
                 .toList();
 
         post.getPostTags().addAll(postTags);
-
-        Long count = 1L;
-        for(var postBlockReg : request.blocks()) {
-
-            PostBlock postBlock = PostBlock.builder()
-                    .post(post)
-                    .blockType(postBlockReg.blockType())
-                    .sortOrder(count++)
-                    .build();
-
-            createBlockByType(postBlockReg.blockType(), postBlock, postBlockReg);
-
-        }
 
         List<Image> images = new ArrayList<>();
         for(var imageFile : request.images()) {
@@ -82,93 +67,6 @@ public class PostService {
         post.getImages().addAll(images);
 
         return postRepository.save(post).getId();
-    }
-
-    @Transactional(readOnly = true)
-    void createBlockByType(BlockType blockType, PostBlock postBlock, PostBlockReq postBlockReq) {
-
-        switch (blockType) {
-            case TEXT, H1, H2: {
-                postBlock.setTextBlock(
-                        TextBlock.builder()
-                                .content(postBlockReq.textBlock().content())
-                                .textStyleType(postBlockReq.textBlock().textStyle())
-                                .build()
-                );
-            }break;
-
-            case LIST: {
-
-                AtomicInteger count = new AtomicInteger(1);
-
-                postBlock.setListBlock(
-                        ListBlock.builder()
-                                .listBlock_type(postBlockReq.listBlock().listType())
-                                .listItems(
-                                        postBlockReq.listBlock().contents().stream()
-                                                .map(textBlockReq ->
-                                                        ListItem.builder().
-                                                                content(textBlockReq.content())
-                                                                .textStyleType(textBlockReq.textStyle())
-                                                                .itemOrder(count.getAndIncrement())
-                                                                .build()
-                                                ).toList()
-                                )
-                                .build()
-                );
-
-            }break;
-        }
-
-    }
-
-
-    @Transactional(readOnly = true)
-    List<PostBlockRes> getContentsByPost(Post post) {
-
-        List<PostBlockRes> postBlockResList = new ArrayList<>();
-
-        for(var postBlock : post.getContents()){
-
-            PostBlockRes postBlockRes = PostBlockRes.builder()
-                    .sortOrder(postBlock.getSortOrder())
-                    .blockType(postBlock.getBlockType())
-                    .build();
-
-            switch (postBlock.getBlockType()){
-                case TEXT, H1, H2: {
-                    postBlockRes.setTextBlock(
-                            TextBlockRes.builder()
-                                    .textStyle(postBlock.getTextBlock().getTextStyleType())
-                                    .content(postBlock.getTextBlock().getContent())
-                                    .build()
-                    );
-                }break;
-
-                case LIST: {
-                    postBlockRes.setListBlock(
-                            ListBlockRes.builder()
-                                    .listType(postBlock.getListBlock().getListBlock_type())
-                                    .contents(
-                                            postBlock.getListBlock().getListItems().stream()
-                                                    .map(listItem -> {
-                                                        return ListItemRes.builder()
-                                                                .textStyle(listItem.getTextStyleType())
-                                                                .content(listItem.getContent())
-                                                                .itemOrder(listItem.getItemOrder())
-                                                                .build();
-                                                    }).toList()
-                                    ).build()
-                    );
-                }
-            }
-
-            postBlockResList.add(postBlockRes);
-
-        }
-
-        return postBlockResList;
-
     }
 
     List<String> getImageUrls(Post post) {
@@ -236,7 +134,7 @@ public class PostService {
                 .orElseThrow(() -> new PostNotFoundException("해당 자료를 찾을 수 없습니댜."));
 
         postRepository.updateViews(postId);
-        return PostDetailReadRes.from(post, getContentsByPost(post),  getImageUrls(post));
+        return PostDetailReadRes.from(post, getImageUrls(post));
     }
 
     @Transactional(readOnly = true)
