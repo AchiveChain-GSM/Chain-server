@@ -3,28 +3,25 @@ package org.example.chain.domain.post.service;
 import lombok.RequiredArgsConstructor;
 import org.example.chain.domain.post.data.req.PostBlockReq;
 import org.example.chain.domain.post.data.req.PostCreateReq;
-import org.example.chain.domain.post.data.res.PostReadRes;
+import org.example.chain.domain.post.data.res.*;
 import org.example.chain.domain.post.entity.*;
 import org.example.chain.domain.post.enums.BlockType;
 import org.example.chain.domain.post.repository.PostLikeRepository;
 import org.example.chain.domain.post.repository.PostRepository;
 import org.example.chain.domain.post.repository.PostViewRepository;
 import org.example.chain.global.error.exception.PostNotFoundException;
+import org.example.chain.global.s3.S3Service;
 import org.example.chain.global.security.util.SecurityUtil;
-import org.example.chain.global.util.ImageUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.time.Instant;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -35,6 +32,7 @@ public class PostService {
     private final SecurityUtil securityUtil;
     private final PostViewRepository postViewRepository;
     private final PostLikeRepository postLikeRepository;
+    private final S3Service s3Service;
 
     @Transactional
     public Long createPost(PostCreateReq request){
@@ -66,6 +64,7 @@ public class PostService {
         return postRepository.save(post).getId();
     }
 
+    @Transactional
     void createBlockByType(BlockType blockType, PostBlock postBlock, PostBlockReq postBlockReq) {
 
         switch (blockType) {
@@ -80,15 +79,15 @@ public class PostService {
 
             case IMAGE: {
 
-                String imageUrl = saveImage(postBlockReq.imageBlockReq().image());
+                String imageKey = s3Service.upload(postBlockReq.imageBlockReq().image(), "posts");
 
-                if(imageUrl == null) {
+                if(imageKey == null) {
                     return;
                 }
 
                 postBlock.setImageBlock(
                         ImageBlock.builder()
-                                .imageUrl(imageUrl)
+                                .imageKey(imageKey)
                                 .imageName(postBlockReq.imageBlockReq().image().getOriginalFilename())
                                 .width(postBlockReq.imageBlockReq().width())
                                 .height(postBlockReq.imageBlockReq().height())
@@ -121,17 +120,66 @@ public class PostService {
 
     }
 
-    String saveImage (MultipartFile file) {
-        try {
-            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-            byte[] bytes = file.getBytes();
-            Files.write(Paths.get(ImageUtil.imageDirPath, fileName), bytes);
 
-            return "/images/" + fileName;
+    @Transactional(readOnly = true)
+    List<PostBlockRes> getContentsByPost(Post post) {
 
-        }catch (Exception e){
-            throw new RuntimeException("Failed to save image", e);
+        List<PostBlockRes> postBlockResList = new ArrayList<>();
+
+        for(var postBlock : post.getContents()){
+
+            PostBlockRes postBlockRes = PostBlockRes.builder()
+                    .sortOrder(postBlock.getSortOrder())
+                    .blockType(postBlock.getBlockType())
+                    .build();
+
+            switch (postBlock.getBlockType()){
+                case TEXT, H1, H2: {
+                    postBlockRes.setTextBlockRes(
+                            TextBlockRes.builder()
+                                    .textStyle(postBlock.getTextBlock().getTextStyleType())
+                                    .content(postBlock.getTextBlock().getContent())
+                                    .build()
+                    );
+                }break;
+
+                case IMAGE: {
+
+                    String imageUrl = s3Service.generateGetUrl(postBlock.getImageBlock().getImageKey());
+
+                    postBlockRes.setImageBlockRes(
+                            ImageBlockRes.builder()
+                                    .imageUrl(imageUrl)
+                                    .width(postBlock.getImageBlock().getWidth())
+                                    .height(postBlock.getImageBlock().getHeight())
+                                    .build()
+                    );
+                }break;
+
+                case LIST: {
+                    postBlockRes.setListBlockRes(
+                            ListBlockRes.builder()
+                                    .listType(postBlock.getListBlock().getListBlock_type())
+                                    .contents(
+                                            postBlock.getListBlock().getListItems().stream()
+                                                    .map(listItem -> {
+                                                        return ListItemRes.builder()
+                                                                .textStyle(listItem.getTextStyleType())
+                                                                .content(listItem.getContent())
+                                                                .itemOrder(listItem.getItemOrder())
+                                                                .build();
+                                                    }).toList()
+                                    ).build()
+                    );
+                }
+            }
+
+            postBlockResList.add(postBlockRes);
+
         }
+
+        return postBlockResList;
+
     }
 
 
@@ -167,7 +215,9 @@ public class PostService {
         // [Step 3] DTO 변환 (이미 메모리에 데이터가 다 있어서 쿼리 안나감)
         List<PostReadRes> dto = postIdPage.getContent().stream()
                 .map(postMap::get)
-                .map(PostReadRes::from)
+                .map(post -> {
+                    return PostReadRes.from(post, getContentsByPost(post));
+                })
                 .toList();
 
         return new PageImpl<>(dto, pageable, postIdPage.getTotalElements());
@@ -178,38 +228,50 @@ public class PostService {
                 .orElseThrow(() -> new PostNotFoundException("해당 자료를 찾을 수 없습니댜."));
 
         postRepository.updateViews(postId);
-        return PostReadRes.from(post);
+        return PostReadRes.from(post, getContentsByPost(post));
     }
 
     @Transactional(readOnly = true)
     public Page<PostReadRes> readPopularPosts(Pageable pageable){
         return postRepository.findPopularPosts(pageable)
-                .map(PostReadRes::from);
+                .map(post -> {
+                    return PostReadRes.from(post, getContentsByPost(post));
+                });
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllViewedPosts(Pageable pageable, Long user_id){
         return postViewRepository.findAllViewedPostsByUserId(pageable ,user_id)
-                .map(PostReadRes::from);
+                .map(post -> {
+                    return PostReadRes.from(post, getContentsByPost(post));
+                });
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllViewedPostsSortRecentViewed(Pageable pageable, Long user_id){
         return postViewRepository.findAllPostsByUserIdSortRecentViewed(pageable, user_id)
-                .map(PostReadRes::from);
+                .map(post -> {
+                    return PostReadRes.from(post, getContentsByPost(post));
+                });
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllWrittenPosts(Pageable pageable, Long user_id){
         return postRepository.findPostsByUserId(user_id, pageable)
-                .map(PostReadRes::from);
+                .map(post -> {
+                    return PostReadRes.from(post, getContentsByPost(post));
+                });
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllLikedPosts(Pageable pageable, Long user_id){
         return postLikeRepository.findLikedPostsByUserId(user_id, pageable)
-                .map(PostReadRes::from);
+                .map(post -> {
+                    return PostReadRes.from(post, getContentsByPost(post));
+                });
     }
 
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllPostsInDuration(Instant from, Instant to, Pageable pageable){
         return postRepository.findAllPostsByCreateAtInDuration(from, to, pageable)
-                .map(PostReadRes::from);
+                .map(post -> {
+                    return PostReadRes.from(post, getContentsByPost(post));
+                });
     }
 }

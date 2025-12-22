@@ -19,75 +19,17 @@ public record PostReadRes(
         Long comments,
         List<String> tags) {
 
-    public static PostReadRes from(Post post) {
+    public static PostReadRes from(Post post, List<PostBlockRes> contents) {
         return new PostReadRes(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
-                getContentsByPost(post),
+                contents,
                 post.getCreateAt(),
                 post.getUser().getName(),
                 post.getLikes(),
                 post.getComments(),
                 post.getPostTags().stream().map(postTag -> postTag.getTag().getName()).toList()
         );
-    }
-
-
-    static List<PostBlockRes> getContentsByPost(Post post) {
-
-        List<PostBlockRes> postBlockResList = new ArrayList<>();
-
-        for(var postBlock : post.getContents()){
-
-            PostBlockRes postBlockRes = PostBlockRes.builder()
-                    .sortOrder(postBlock.getSortOrder())
-                    .blockType(postBlock.getBlockType())
-                    .build();
-
-            switch (postBlock.getBlockType()){
-                case TEXT, H1, H2: {
-                    postBlockRes.setTextBlockRes(
-                            TextBlockRes.builder()
-                                .textStyle(postBlock.getTextBlock().getTextStyleType())
-                                .content(postBlock.getTextBlock().getContent())
-                                .build()
-                    );
-                }break;
-
-                case IMAGE: {
-                    postBlockRes.setImageBlockRes(
-                      ImageBlockRes.builder()
-                              .imageUrl(postBlock.getImageBlock().getImageUrl())
-                              .width(postBlock.getImageBlock().getWidth())
-                              .height(postBlock.getImageBlock().getHeight())
-                              .build()
-                    );
-                }break;
-
-                case LIST: {
-                    postBlockRes.setListBlockRes(
-                      ListBlockRes.builder()
-                              .listType(postBlock.getListBlock().getListBlock_type())
-                              .contents(
-                                      postBlock.getListBlock().getListItems().stream()
-                                      .map(listItem -> {
-                                          return ListItemRes.builder()
-                                                  .textStyle(listItem.getTextStyleType())
-                                                  .content(listItem.getContent())
-                                                  .itemOrder(listItem.getItemOrder())
-                                                  .build();
-                                      }).toList()
-                              ).build()
-                    );
-                }
-            }
-
-            postBlockResList.add(postBlockRes);
-
-        }
-
-        return postBlockResList;
-
     }
 }
