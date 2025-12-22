@@ -32,10 +32,6 @@ public class PostBlock {
     private TextBlock textBlock;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, optional = true)
-    @JoinColumn(name = "image_block_id")
-    private ImageBlock imageBlock;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, optional = true)
     @JoinColumn(name = "list_block_id")
     private ListBlock listBlock;
 

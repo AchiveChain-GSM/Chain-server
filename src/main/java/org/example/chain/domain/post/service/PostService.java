@@ -67,6 +67,20 @@ public class PostService {
             createBlockByType(postBlockReg.blockType(), postBlock, postBlockReg);
 
         }
+
+        List<Image> images = new ArrayList<>();
+        for(var imageFile : request.images()) {
+
+            String imageKey = s3Service.upload(imageFile, "posts");
+
+            Image image = Image.builder()
+                    .imageKey(imageKey)
+                    .imageName(imageFile.getOriginalFilename())
+                    .build();
+            images.add(image);
+        }
+        post.getImages().addAll(images);
+
         return postRepository.save(post).getId();
     }
 
@@ -79,24 +93,6 @@ public class PostService {
                         TextBlock.builder()
                                 .content(postBlockReq.textBlockReq().content())
                                 .textStyleType(postBlockReq.textBlockReq().textStyle())
-                                .build()
-                );
-            }break;
-
-            case IMAGE: {
-
-                String imageKey = s3Service.upload(postBlockReq.imageBlockReq().image(), "posts");
-
-                if(imageKey == null) {
-                    return;
-                }
-
-                postBlock.setImageBlock(
-                        ImageBlock.builder()
-                                .imageKey(imageKey)
-                                .imageName(postBlockReq.imageBlockReq().image().getOriginalFilename())
-                                .width(postBlockReq.imageBlockReq().width())
-                                .height(postBlockReq.imageBlockReq().height())
                                 .build()
                 );
             }break;
@@ -149,19 +145,6 @@ public class PostService {
                     );
                 }break;
 
-                case IMAGE: {
-
-                    String imageUrl = s3Service.generateGetUrl(postBlock.getImageBlock().getImageKey());
-
-                    postBlockRes.setImageBlockRes(
-                            ImageBlockRes.builder()
-                                    .imageUrl(imageUrl)
-                                    .width(postBlock.getImageBlock().getWidth())
-                                    .height(postBlock.getImageBlock().getHeight())
-                                    .build()
-                    );
-                }break;
-
                 case LIST: {
                     postBlockRes.setListBlockRes(
                             ListBlockRes.builder()
@@ -186,6 +169,16 @@ public class PostService {
 
         return postBlockResList;
 
+    }
+
+    List<String> getImageUrls(Post post) {
+        return post.getImages().stream().map(image -> {
+            return s3Service.generateGetUrl(image.getImageKey());
+        }).toList();
+    }
+
+    String getFirstImageUrl(Post post) {
+        return s3Service.generateGetUrl(post.getImages().getFirst().getImageKey());
     }
 
 
@@ -222,54 +215,54 @@ public class PostService {
         List<PostReadRes> dto = postIdPage.getContent().stream()
                 .map(postMap::get)
                 .map(post -> {
-                    return PostReadRes.from(post, getContentsByPost(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post));
                 })
                 .toList();
 
         return new PageImpl<>(dto, pageable, postIdPage.getTotalElements());
     }
     @Transactional
-    public PostReadRes readPost(Long postId){
+    public PostDetailReadRes readPost(Long postId){
         Post post = postRepository.findByIdWithDetails(postId)
                 .orElseThrow(() -> new PostNotFoundException("해당 자료를 찾을 수 없습니댜."));
 
         postRepository.updateViews(postId);
-        return PostReadRes.from(post, getContentsByPost(post));
+        return PostDetailReadRes.from(post, getContentsByPost(post),  getImageUrls(post));
     }
 
     @Transactional(readOnly = true)
     public Page<PostReadRes> readPopularPosts(Pageable pageable){
         return postRepository.findPopularPosts(pageable)
                 .map(post -> {
-                    return PostReadRes.from(post, getContentsByPost(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post));
                 });
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllViewedPosts(Pageable pageable, Long user_id){
         return postViewRepository.findAllViewedPostsByUserId(pageable ,user_id)
                 .map(post -> {
-                    return PostReadRes.from(post, getContentsByPost(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post));
                 });
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllViewedPostsSortRecentViewed(Pageable pageable, Long user_id){
         return postViewRepository.findAllPostsByUserIdSortRecentViewed(pageable, user_id)
                 .map(post -> {
-                    return PostReadRes.from(post, getContentsByPost(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post));
                 });
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllWrittenPosts(Pageable pageable, Long user_id){
         return postRepository.findPostsByUserId(user_id, pageable)
                 .map(post -> {
-                    return PostReadRes.from(post, getContentsByPost(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post));
                 });
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllLikedPosts(Pageable pageable, Long user_id){
         return postLikeRepository.findLikedPostsByUserId(user_id, pageable)
                 .map(post -> {
-                    return PostReadRes.from(post, getContentsByPost(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post));
                 });
     }
 
@@ -277,7 +270,7 @@ public class PostService {
     public Page<PostReadRes> readAllPostsInDuration(Instant from, Instant to, Pageable pageable){
         return postRepository.findAllPostsByCreateAtInDuration(from, to, pageable)
                 .map(post -> {
-                    return PostReadRes.from(post, getContentsByPost(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post));
                 });
     }
 
