@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ImageBlock {
+public class Image {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "image_block_id")
-    private Long imageBlock_id;
+    @Column(name = "image_id")
+    private Long image_id;
 
     @Column(name = "image_key")
     private String imageKey;
@@ -24,18 +24,10 @@ public class ImageBlock {
     @Column(name = "image_name")
     private String imageName;
 
-    @Column(name = "width")
-    private int width;
-
-    @Column(name = "height")
-    private int height;
-
     @Builder
-    public ImageBlock(String imageKey, String imageName, int width, int height) {
+    public Image(String imageKey, String imageName, int width, int height) {
         this.imageKey = imageKey;
         this.imageName = imageName;
-        this.width = width;
-        this.height = height;
     }
 
 }

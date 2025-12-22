@@ -3,31 +3,18 @@ package org.example.chain.domain.post.data.res;
 import lombok.Builder;
 import org.example.chain.domain.post.entity.Post;
 
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 @Builder
-public record PostReadRes(
-        Long id,
-        String title,
-        String content,
-        List<PostBlockRes> contents,
-        Instant createAt,
-        String name,
-        Long likes,
-        List<String> tags) {
+public record PostReadRes(String title, String author, String content, List<String> tags, String firstImageUrl) {
 
-    public static PostReadRes from(Post post, List<PostBlockRes> contents) {
+    public static PostReadRes from(Post post, String firstImageUrl) {
         return new PostReadRes(
-                post.getId(),
                 post.getTitle(),
-                post.getContent(),
-                contents,
-                post.getCreateAt(),
                 post.getUser().getName(),
-                post.getLikes(),
-                post.getPostTags().stream().map(postTag -> postTag.getTag().getName()).toList()
+                post.getContent(),
+                post.getPostTags().stream().map(postTag -> postTag.getTag().getName()).toList(),
+                firstImageUrl
         );
     }
 }

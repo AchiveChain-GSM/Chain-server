@@ -2,6 +2,7 @@ package org.example.chain.domain.post.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.chain.domain.post.data.req.TimelinePostReq;
+import org.example.chain.domain.post.data.res.PostDetailReadRes;
 import org.example.chain.domain.post.data.res.PostReadRes;
 import org.example.chain.domain.post.service.PostService;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,7 @@ public class PostReadController {
     private final PostService postService;
 
     @GetMapping("/{postId}")
-    public ResponseEntity<PostReadRes> readPost(@PathVariable Long postId){
+    public ResponseEntity<PostDetailReadRes> readPost(@PathVariable Long postId){
         return ResponseEntity.ok(postService.readPost(postId));
     }
     @GetMapping("/recent")
