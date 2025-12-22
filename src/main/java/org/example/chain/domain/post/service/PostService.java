@@ -1,15 +1,14 @@
 package org.example.chain.domain.post.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.chain.domain.post.entity.PostBookmark;
 import org.example.chain.domain.post.data.req.PostBlockReq;
 import org.example.chain.domain.post.data.req.PostCreateReq;
 import org.example.chain.domain.post.data.res.PostReadRes;
-import org.example.chain.domain.post.entity.Post;
-import org.example.chain.domain.post.entity.PostLike;
-import org.example.chain.domain.post.entity.PostTag;
-import org.example.chain.domain.post.data.res.*;
 import org.example.chain.domain.post.entity.*;
 import org.example.chain.domain.post.enums.BlockType;
+import org.example.chain.domain.post.data.res.*;
+import org.example.chain.domain.post.repository.PostBookmarkRepository;
 import org.example.chain.domain.post.repository.PostLikeRepository;
 import org.example.chain.domain.post.repository.PostRepository;
 import org.example.chain.domain.post.repository.PostViewRepository;
@@ -39,6 +38,7 @@ public class PostService {
     private final PostViewRepository postViewRepository;
     private final PostLikeRepository postLikeRepository;
     private final S3Service s3Service;
+    private final PostBookmarkRepository bookmarkRepository;
 
     @Transactional
     public Long createPost(PostCreateReq request){
@@ -297,5 +297,24 @@ public class PostService {
             postLikeRepository.save(newLike);
             postLikeRepository.minusLikes(postId);
         }
+    }
+
+    @Transactional
+    public void toggleBookmark(Long postId) {
+        User user = securityUtil.getCurrentUser();
+        Post post = postRepository.findByIdWithLock(postId)
+                .orElseThrow(PostNotFoundException::new);
+
+        bookmarkRepository.findByPostIdAndUserId(postId, user.getId())
+                .ifPresentOrElse(
+                        bookmark -> {
+                            bookmarkRepository.delete(bookmark);
+                            bookmarkRepository.minusBookmark(postId);
+                        },
+                        () -> {
+                            bookmarkRepository.save(new PostBookmark(post, user));
+                            bookmarkRepository.addBookmark(postId);
+                        }
+                );
     }
 }
