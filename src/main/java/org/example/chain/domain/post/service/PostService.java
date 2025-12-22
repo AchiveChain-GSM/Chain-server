@@ -1,11 +1,13 @@
 package org.example.chain.domain.post.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.chain.domain.post.entity.PostBookmark;
 import org.example.chain.domain.post.data.req.PostCreateReq;
 import org.example.chain.domain.post.data.res.PostReadRes;
 import org.example.chain.domain.post.entity.Post;
 import org.example.chain.domain.post.entity.PostLike;
 import org.example.chain.domain.post.entity.PostTag;
+import org.example.chain.domain.post.repository.PostBookmarkRepository;
 import org.example.chain.domain.post.repository.PostLikeRepository;
 import org.example.chain.domain.post.repository.PostRepository;
 import org.example.chain.domain.post.repository.PostViewRepository;
@@ -15,7 +17,6 @@ import org.example.chain.global.security.util.SecurityUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ public class PostService {
     private final SecurityUtil securityUtil;
     private final PostViewRepository postViewRepository;
     private final PostLikeRepository postLikeRepository;
+    private final PostBookmarkRepository bookmarkRepository;
 
     @Transactional
     public Long createPost(PostCreateReq request){
@@ -142,5 +144,18 @@ public class PostService {
             postLikeRepository.save(newLike);
             postLikeRepository.minusLikes(postId);
         }
+    }
+
+    @Transactional
+    public void toggleBookmark(Long postId) {
+        User user = securityUtil.getCurrentUser();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(PostNotFoundException::new);
+
+        bookmarkRepository.findByPostIdAndUserId(postId, user.getId())
+                .ifPresentOrElse(
+                        bookmarkRepository::delete,
+                        () -> bookmarkRepository.save(new PostBookmark(post, user))
+                );
     }
 }
