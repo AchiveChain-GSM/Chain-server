@@ -23,10 +23,11 @@ public class UserService {
     @Transactional
     public void createUser(SignUpReq request){
         User user = new User(request, passwordEncoder.encode(request.password()));
-        userRepository.save(user);
 
         String token = emailService.createVerificationToken(user);
         emailService.sendVerificationEmail(user.getEmail(), token);
+
+        userRepository.save(user);
     }
 
     @Transactional
