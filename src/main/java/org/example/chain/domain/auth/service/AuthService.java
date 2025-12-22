@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-
+    private final EmailService emailService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
@@ -38,5 +38,10 @@ public class AuthService {
         String refreshToken = jwtProvider.createRefreshToken(user.getEmail());
 
         return new TokenRes(accessToken, refreshToken);
+    }
+
+    @Transactional
+    public void verifyEmail(String token) {
+        emailService.verifyToken(token);
     }
 }

@@ -1,6 +1,7 @@
 package org.example.chain.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.chain.domain.auth.service.EmailService;
 import org.example.chain.domain.user.data.request.SignUpReq;
 import org.example.chain.domain.user.data.request.UpdateReq;
 import org.example.chain.domain.user.data.response.UserRes;
@@ -17,11 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Transactional
     public void createUser(SignUpReq request){
         User user = new User(request, passwordEncoder.encode(request.password()));
         userRepository.save(user);
+
+        String token = emailService.createVerificationToken(user);
+        emailService.sendVerificationEmail(user.getEmail(), token);
     }
 
     @Transactional

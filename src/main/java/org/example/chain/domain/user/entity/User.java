@@ -39,6 +39,9 @@ public class User {
     @ElementCollection(fetch = FetchType.LAZY)
     private List<Authority> roles = new ArrayList<>();
 
+    @Column(nullable = false)
+    private boolean emailVerified = false;
+
     @OneToMany(mappedBy = "user")
     private List<Post> post = new ArrayList<>();
 
@@ -59,5 +62,9 @@ public class User {
         email = request.email();
         this.password = password;
         roles = request.roles();
+    }
+
+    public void verifyEmail() {
+        this.emailVerified = true;
     }
 }
