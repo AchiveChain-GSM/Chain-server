@@ -181,27 +181,36 @@ public class PostService {
         return s3Service.generateGetUrl(post.getImages().getFirst().getImageKey());
     }
 
+    boolean isLiked(Long postId, Long userId) {
+        return postLikeRepository.existsByPostIdAndUserId(postId, userId);
+    }
+
+    boolean isBookmarked(Long postId, Long userId) {
+        return postLikeRepository.existsByPostIdAndUserId(postId, userId);
+    }
+
+
 
     @Transactional
     // 통합 검색 (N+1 해결 버전)
-    public Page<PostReadRes> search(String keyword, Pageable pageable) {
+    public Page<PostReadRes> search(String keyword, Pageable pageable, Long user_id) {
         // [Step 1] 조건에 맞는 ID들만 페이징해서 가져옴 (매우 빠름)
         Page<Long> postIdPage = postRepository.findIdsByIntegratedSearch(keyword, pageable);
 
-        return convertToDtoPage(postIdPage, pageable);
+        return convertToDtoPage(postIdPage, pageable,  user_id);
     }
 
     @Transactional
     // 전체 조회 (N+1 해결 버전)
-    public Page<PostReadRes> readAllPosts(Pageable pageable) {
+    public Page<PostReadRes> readAllPosts(Pageable pageable, Long user_id) {
         // [Step 1] ID들만 페이징 조회
         Page<Long> postIdPage = postRepository.findAllIds(pageable);
 
-        return convertToDtoPage(postIdPage, pageable);
+        return convertToDtoPage(postIdPage, pageable,  user_id);
     }
 
     // 공통 변환 로직 (2단계 조회)
-    private Page<PostReadRes> convertToDtoPage(Page<Long> postIdPage, Pageable pageable) {
+    private Page<PostReadRes> convertToDtoPage(Page<Long> postIdPage, Pageable pageable, Long user_id) {
         if (postIdPage.isEmpty()) {
             return Page.empty(pageable);
         }
@@ -215,7 +224,7 @@ public class PostService {
         List<PostReadRes> dto = postIdPage.getContent().stream()
                 .map(postMap::get)
                 .map(post -> {
-                    return PostReadRes.from(post, getFirstImageUrl(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post), isLiked(post.getId(), user_id), isBookmarked(post.getId(), user_id));
                 })
                 .toList();
 
@@ -231,38 +240,39 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostReadRes> readPopularPosts(Pageable pageable){
-        return postRepository.findPopularPosts(pageable)
-                .map(post -> {
-                    return PostReadRes.from(post, getFirstImageUrl(post));
-                });
-    }
-    @Transactional(readOnly = true)
     public Page<PostReadRes> readAllViewedPosts(Pageable pageable, Long user_id){
         return postViewRepository.findAllViewedPostsByUserId(pageable ,user_id)
                 .map(post -> {
-                    return PostReadRes.from(post, getFirstImageUrl(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post), isLiked(post.getId(), user_id), isBookmarked(post.getId(), user_id));
                 });
     }
+
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllViewedPostsSortRecentViewed(Pageable pageable, Long user_id){
         return postViewRepository.findAllPostsByUserIdSortRecentViewed(pageable, user_id)
                 .map(post -> {
-                    return PostReadRes.from(post, getFirstImageUrl(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post), isLiked(post.getId(), user_id), isBookmarked(post.getId(), user_id));
+                });
+    }
+    @Transactional(readOnly = true)
+    public Page<PostReadRes> readPopularPosts(Pageable pageable, Long user_id) {
+        return postRepository.findPopularPosts(pageable)
+                .map(post -> {
+                    return PostReadRes.from(post, getFirstImageUrl(post), isLiked(post.getId(), user_id), isBookmarked(post.getId(), user_id));
                 });
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllWrittenPosts(Pageable pageable, Long user_id){
         return postRepository.findPostsByUserId(user_id, pageable)
                 .map(post -> {
-                    return PostReadRes.from(post, getFirstImageUrl(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post), isLiked(post.getId(), user_id), isBookmarked(post.getId(), user_id));
                 });
     }
     @Transactional(readOnly = true)
     public Page<PostReadRes> readAllLikedPosts(Pageable pageable, Long user_id){
         return postLikeRepository.findLikedPostsByUserId(user_id, pageable)
                 .map(post -> {
-                    return PostReadRes.from(post, getFirstImageUrl(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post), isLiked(post.getId(), user_id), isBookmarked(post.getId(), user_id));
                 });
     }
 
@@ -270,7 +280,7 @@ public class PostService {
     public Page<PostReadRes> readAllPostsInDuration(Instant from, Instant to, Pageable pageable){
         return postRepository.findAllPostsByCreateAtInDuration(from, to, pageable)
                 .map(post -> {
-                    return PostReadRes.from(post, getFirstImageUrl(post));
+                    return PostReadRes.from(post, getFirstImageUrl(post), false, false);
                 });
     }
 
