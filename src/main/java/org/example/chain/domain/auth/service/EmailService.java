@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.chain.domain.auth.entity.EmailVerificationToken;
 import org.example.chain.domain.auth.repository.EmailVerificationTokenRepository;
 import org.example.chain.domain.user.entity.User;
-import org.example.chain.domain.user.repository.UserRepository;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
