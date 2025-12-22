@@ -1,16 +1,15 @@
 package org.example.chain.domain.post.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.chain.domain.post.data.req.PostReportReq;
 import org.example.chain.domain.post.entity.PostBookmark;
 import org.example.chain.domain.post.data.req.PostCreateReq;
 import org.example.chain.domain.post.data.res.PostReadRes;
 import org.example.chain.domain.post.entity.*;
 import org.example.chain.domain.post.data.res.*;
-import org.example.chain.domain.post.repository.PostBookmarkRepository;
-import org.example.chain.domain.post.repository.PostLikeRepository;
-import org.example.chain.domain.post.repository.PostRepository;
-import org.example.chain.domain.post.repository.PostViewRepository;
+import org.example.chain.domain.post.repository.*;
 import org.example.chain.domain.user.entity.User;
+import org.example.chain.domain.user.repository.UserRepository;
 import org.example.chain.global.error.exception.PostNotFoundException;
 import org.example.chain.global.s3.S3Service;
 import org.example.chain.global.security.util.SecurityUtil;
@@ -19,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.util.ArrayList;
@@ -34,6 +34,8 @@ public class PostService {
     private final SecurityUtil securityUtil;
     private final PostViewRepository postViewRepository;
     private final PostLikeRepository postLikeRepository;
+    private final PostReportRepository postReportRepository;
+    private final UserRepository userRepository;
     private final S3Service s3Service;
     private final PostBookmarkRepository bookmarkRepository;
 
@@ -85,6 +87,54 @@ public class PostService {
 
     boolean isBookmarked(Long postId, Long userId) {
         return postLikeRepository.existsByPostIdAndUserId(postId, userId);
+    }
+
+
+    @Transactional
+    public void reportPost(PostReportReq postReportReq, Long user_id) {
+
+        Post post = postRepository.findPostById(postReportReq.post_id());
+        User user = userRepository.getById(user_id);
+
+        PostReport postReport = PostReport.builder()
+                        .title(postReportReq.title())
+                        .description(postReportReq.description())
+                        .post(post)
+                        .user(user)
+                        .build();
+
+        post.getPostReports().add(postReport);
+
+        postReportRepository.save(postReport);
+
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostReportRes> readReport(Pageable pageable, Long user_id) {
+
+        Page<PostReport> postReport = postReportRepository.findPostReportByUserId(user_id, pageable);
+        return postReport.map(pr -> {
+            return PostReportRes.builder()
+                    .post_id(pr.getPost().getId())
+                    .title(pr.getTitle())
+                    .description(pr.getDescription())
+                    .build();
+        });
+    }
+
+
+    @Transactional
+    public void deleteReport(Long postReport_id) {
+
+        Post post = postRepository.findPostById(postReport_id);
+
+        PostReport postReport = post.getPostReports().stream()
+                .filter(pr -> pr.getReport_id().equals(postReport_id))
+                .findFirst()
+                .orElseThrow();
+
+        post.getPostReports().remove(postReport);
+
     }
 
 

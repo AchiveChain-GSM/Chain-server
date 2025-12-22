@@ -18,6 +18,10 @@ public class Image {
     @Column(name = "image_id")
     private Long image_id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
+
     @Column(name = "image_key")
     private String imageKey;
 

@@ -51,8 +51,8 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long id){
-        User user = userRepository.findById(id)
+    public void deleteUser(Long postReport_id){
+        User user = userRepository.findById(postReport_id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아이디의 사용자를 찾을 수 없음"));
         userRepository.delete(user);
     }
