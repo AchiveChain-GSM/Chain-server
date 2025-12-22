@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -131,10 +132,15 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("게시글 없음"));
 
-        postLikeRepository.findByPostIdAndUserId(postId, user.getId())
-                .ifPresentOrElse(
-                        postLikeRepository::delete,
-                        () -> postLikeRepository.save(new PostLike(post, user))
-                );
+        Optional<PostLike> postLikeOptional = postLikeRepository.findByPostIdAndUserId(postId, user.getId());
+
+        if (postLikeOptional.isPresent()) {
+            postLikeRepository.delete(postLikeOptional.get());
+            postLikeRepository.addLikes(postId);
+        } else {
+            PostLike newLike = new PostLike(post, user);
+            postLikeRepository.save(newLike);
+            postLikeRepository.minusLikes(postId);
+        }
     }
 }
