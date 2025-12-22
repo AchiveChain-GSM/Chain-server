@@ -8,8 +8,7 @@ import org.example.chain.domain.post.enums.BlockType;
 @Setter
 public class PostBlockRes {
     BlockType blockType;
-    ImageBlockRes imageBlockRes;
-    TextBlockRes textBlockRes;
-    ListBlockRes listBlockRes;
-    int sortOrder;
+    TextBlockRes textBlock;
+    ListBlockRes listBlock;
+    Long sortOrder;
 }
