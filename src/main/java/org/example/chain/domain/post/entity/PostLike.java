@@ -12,7 +12,7 @@ import java.time.Instant;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class PostLike {
     @Id
@@ -31,4 +31,9 @@ public class PostLike {
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
+
+    public PostLike(Post post, User user){
+        this.post = post;
+        this.user = user;
+    }
 }

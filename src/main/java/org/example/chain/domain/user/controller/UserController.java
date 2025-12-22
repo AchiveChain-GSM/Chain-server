@@ -26,7 +26,7 @@ public class UserController {
         return new ResponseEntity<>(userService.readUser(id), HttpStatus.OK);
     }
 
-    @PutMapping("/me")
+    @PutMapping
     public ResponseEntity<HttpStatus> updateUser(@RequestBody UpdateReq request){
         userService.updateUser(request);
         return new ResponseEntity<>(HttpStatus.OK);

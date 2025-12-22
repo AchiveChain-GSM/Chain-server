@@ -1,9 +1,11 @@
 package org.example.chain.domain.post.repository;
 
+import jakarta.persistence.LockModeType;
 import org.example.chain.domain.post.entity.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -80,4 +82,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 4. 특정 유저의 글 ID만 가져오기
     @Query("SELECT p.id FROM Post p WHERE p.user.id = :userId")
     Page<Long> findIdsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Post p WHERE p.id = :postId")
+    Optional<Post> findByIdWithLock(@Param("postId") Long postId);
+
+    @Query("SELECT p FROM Post p WHERE p.id = :post_id")
+    Post findPostById(@Param(value = "post_id") Long post_id);
+
+    @Query("SELECT p FROM Post p JOIN FETCH p.postReports pr WHERE pr.report_id = :report_id")
+    Post findPostsByIdWithReport(@Param("report_id") Long report_id);
+
+    @Query("SELECT p FROM Post p WHERE p.id = :post_id")
+    Post getPostById(@Param(value = "post_id") Long post_id);
 }
