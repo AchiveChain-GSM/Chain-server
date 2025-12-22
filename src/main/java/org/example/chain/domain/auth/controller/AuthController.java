@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -55,10 +57,10 @@ public class AuthController {
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordReq request){
+    public ResponseEntity<URI> changePassword(@RequestBody ChangePasswordReq request){
         User user = securityUtil.getCurrentUser();
 
         user.update(passwordEncoder.encode(request.password()));
-        return ResponseEntity.created(java.net.URI.create("/api/auth/login")).build();
+        return ResponseEntity.ok(java.net.URI.create("/api/auth/login"));
     }
 }
