@@ -42,7 +42,7 @@ public class User {
     @Column(nullable = false)
     private boolean emailVerified = false;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> post = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
@@ -62,6 +62,10 @@ public class User {
         email = request.email();
         this.password = password;
         roles = request.roles();
+    }
+
+    public void update(String password){
+        this.password = password;
     }
 
     public void verifyEmail() {
