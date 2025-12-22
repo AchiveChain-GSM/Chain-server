@@ -20,20 +20,20 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final EmailVerificationTokenRepository tokenRepository;
 
-    @Transactional
-    public String createVerificationToken(User user) {
-        String token = UUID.randomUUID().toString();
+        @Transactional
+        public String createVerificationToken(User user) {
+            String token = UUID.randomUUID().toString();
 
-        EmailVerificationToken verificationToken =
-                EmailVerificationToken.builder()
-                        .token(token)
-                        .user(user)
-                        .expiryDate(Instant.now().plus(1, ChronoUnit.DAYS))
-                        .build();
+            EmailVerificationToken verificationToken =
+                    EmailVerificationToken.builder()
+                            .token(token)
+                            .user(user)
+                            .expiryDate(Instant.now().plus(1, ChronoUnit.DAYS))
+                            .build();
 
-        tokenRepository.save(verificationToken);
-        return token;
-    }
+            tokenRepository.save(verificationToken);
+            return token;
+        }
 
     @Transactional
     public void verifyToken(String token) {

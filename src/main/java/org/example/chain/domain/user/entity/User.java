@@ -30,8 +30,17 @@ public class User {
     @Column(name = "user_email", nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "user_password", nullable = false)
     private String password;
+
+    @Column(name = "user_generation")
+    private String userGeneration;
+
+    @Column(name = "user_class")
+    private String userClass;
+
+    @Column(name = "user_number")
+    private String userNumber;
 
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
