@@ -149,7 +149,7 @@ public class PostService {
     @Transactional
     public void toggleBookmark(Long postId) {
         User user = securityUtil.getCurrentUser();
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findByIdWithLock(postId)
                 .orElseThrow(PostNotFoundException::new);
 
         bookmarkRepository.findByPostIdAndUserId(postId, user.getId())
