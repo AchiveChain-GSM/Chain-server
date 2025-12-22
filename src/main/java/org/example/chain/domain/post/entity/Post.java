@@ -34,6 +34,10 @@ public class Post {
     @Column(name = "content")
     private String content;
 
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OrderBy("sortOrder ASC")
+    private List<PostBlock> contents;
+
     @CreatedDate
     @Column(name = "createAt", updatable = false)
     private Instant createAt;
@@ -43,8 +47,8 @@ public class Post {
     private Long likes = 0L;
 
     @ColumnDefault("0")
-    @Column(name = "comments")
-    private Long comments = 0L;
+    @Column(name = "bookmarks")
+    private Long bookmarks = 0L;
 
     @Builder.Default
     @BatchSize(size = 100) // postTags를 조회할 때 최대 100개씩 IN 쿼리로 묶어서 가져옴
@@ -61,10 +65,20 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PostComment> postComments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<PostBookmark> postBookmark = new ArrayList<>();
+
     @ColumnDefault("0")
     @Column(name = "views")
     private Long views = 0L;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PostView> postViews = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JoinColumn(name = "image_id")
+    private List<Image> images = new ArrayList<>();
+
+
+
 }
