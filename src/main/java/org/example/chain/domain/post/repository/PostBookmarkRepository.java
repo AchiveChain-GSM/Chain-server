@@ -19,10 +19,10 @@ public interface PostBookmarkRepository extends JpaRepository<PostBookmark, Long
     Page<Post> findBookmarkedPosts(@Param("userId") Long userId, Pageable pageable);
 
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE Post p SET p.views = p.views + 1 WHERE p.id = :postId")
+    @Query("UPDATE Post p SET p.bookmarks = p.bookmarks + 1 WHERE p.id = :postId")
     void addBookmark(@Param("postId") Long postId);
 
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE Post p SET p.views = p.views + 1 WHERE p.id = :postId")
+    @Query("UPDATE Post p SET p.bookmarks = p.bookmarks + 1 WHERE p.id = :postId")
     void minusBookmark(@Param("postId") Long postId);
 }
