@@ -4,6 +4,7 @@ import lombok.Builder;
 import org.example.chain.domain.post.entity.Post;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Builder
@@ -11,17 +12,19 @@ public record PostReadRes(
         Long id,
         String title,
         String content,
+        List<PostBlockRes> contents,
         Instant createAt,
         String name,
         Long likes,
         Long comments,
         List<String> tags) {
 
-    public static PostReadRes from(Post post) {
+    public static PostReadRes from(Post post, List<PostBlockRes> contents) {
         return new PostReadRes(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
+                contents,
                 post.getCreateAt(),
                 post.getUser().getName(),
                 post.getLikes(),
