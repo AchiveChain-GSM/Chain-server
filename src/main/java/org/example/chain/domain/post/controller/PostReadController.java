@@ -22,32 +22,37 @@ public class PostReadController {
     public ResponseEntity<PostDetailReadRes> readPost(@PathVariable Long postId){
         return ResponseEntity.ok(postService.readPost(postId));
     }
-    @GetMapping("/recent")
+    @GetMapping("{user_id}/recent")
     public ResponseEntity<Page<PostReadRes>> readRecentPosts(
+            @PathVariable Long user_id,
             @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC)
             Pageable pageable){
-        Page<PostReadRes> posts = postService.readAllPosts(pageable);
+        Page<PostReadRes> posts = postService.readAllPosts(pageable, user_id);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/popular")
-    public ResponseEntity<Page<PostReadRes>> readPopularPosts(@PageableDefault(size = 20) Pageable pageable) {
-        Page<PostReadRes> posts = postService.readPopularPosts(pageable);
+    @GetMapping("{user_id}/popular")
+    public ResponseEntity<Page<PostReadRes>> readPopularPosts(
+            @PathVariable Long user_id,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<PostReadRes> posts = postService.readPopularPosts(pageable, user_id);
         return ResponseEntity.ok(posts);
     }
-    @GetMapping("/most-view")
+    @GetMapping("{user_id}/most-view")
     public ResponseEntity<Page<PostReadRes>> readMostViewPosts(
+            @PathVariable Long user_id,
             @PageableDefault(size = 20, sort = "views", direction = Sort.Direction.DESC)
             Pageable pageable) {
-        Page<PostReadRes> posts = postService.readAllPosts(pageable);
+        Page<PostReadRes> posts = postService.readAllPosts(pageable, user_id);
         return ResponseEntity.ok(posts);
     }
 
     // 검색 엔진
-    @GetMapping("/search")
+    @GetMapping("{user_id}/search")
     public ResponseEntity<Page<PostReadRes>> search(
+            @PathVariable Long user_id,
             @RequestParam(required = false) String keyword,
             Pageable pageable) {
-        return ResponseEntity.ok(postService.search(keyword, pageable));
+        return ResponseEntity.ok(postService.search(keyword, pageable, user_id));
     }
 
     // 최근 본 자료
