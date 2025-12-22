@@ -55,7 +55,7 @@ public class PostService {
 
         post.getPostTags().addAll(postTags);
 
-        int count = 1;
+        Long count = 1L;
         for(var postBlockReg : request.blocks()) {
 
             PostBlock postBlock = PostBlock.builder()
@@ -91,8 +91,8 @@ public class PostService {
             case TEXT, H1, H2: {
                 postBlock.setTextBlock(
                         TextBlock.builder()
-                                .content(postBlockReq.textBlockReq().content())
-                                .textStyleType(postBlockReq.textBlockReq().textStyle())
+                                .content(postBlockReq.textBlock().content())
+                                .textStyleType(postBlockReq.textBlock().textStyle())
                                 .build()
                 );
             }break;
@@ -103,9 +103,9 @@ public class PostService {
 
                 postBlock.setListBlock(
                         ListBlock.builder()
-                                .listBlock_type(postBlockReq.listBlockReq().listType())
+                                .listBlock_type(postBlockReq.listBlock().listType())
                                 .listItems(
-                                        postBlockReq.listBlockReq().contents().stream()
+                                        postBlockReq.listBlock().contents().stream()
                                                 .map(textBlockReq ->
                                                         ListItem.builder().
                                                                 content(textBlockReq.content())
@@ -137,7 +137,7 @@ public class PostService {
 
             switch (postBlock.getBlockType()){
                 case TEXT, H1, H2: {
-                    postBlockRes.setTextBlockRes(
+                    postBlockRes.setTextBlock(
                             TextBlockRes.builder()
                                     .textStyle(postBlock.getTextBlock().getTextStyleType())
                                     .content(postBlock.getTextBlock().getContent())
@@ -146,7 +146,7 @@ public class PostService {
                 }break;
 
                 case LIST: {
-                    postBlockRes.setListBlockRes(
+                    postBlockRes.setListBlock(
                             ListBlockRes.builder()
                                     .listType(postBlock.getListBlock().getListBlock_type())
                                     .contents(
