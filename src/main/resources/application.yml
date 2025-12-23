@@ -3,7 +3,7 @@ spring:
     name: chain
 
   datasource:
-    url: jdbc:mariadb://localhost:3306/user?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mariadb://localhost:3306/user?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
     username: root
     password: ${DB_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
