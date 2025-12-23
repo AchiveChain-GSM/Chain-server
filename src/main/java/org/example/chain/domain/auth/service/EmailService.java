@@ -44,9 +44,6 @@ public class EmailService {
             throw new IllegalArgumentException("만료된 토큰");
         }
 
-        User user = verificationToken.getUser();
-        user.verifyEmail();
-
         tokenRepository.delete(verificationToken);
     }
 
