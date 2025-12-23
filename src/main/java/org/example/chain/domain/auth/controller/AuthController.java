@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.chain.domain.auth.data.request.ChangePasswordReq;
 import org.example.chain.domain.auth.data.request.LoginReq;
 import org.example.chain.domain.auth.data.request.SendEmailReq;
+import org.example.chain.domain.auth.data.request.VerifyEmailReq;
 import org.example.chain.domain.auth.data.response.TokenRes;
 import org.example.chain.domain.auth.service.AuthService;
 import org.example.chain.domain.auth.service.EmailService;
@@ -42,17 +43,18 @@ public class AuthController {
     }
 
     @PostMapping("/send-email")
-    public void sendEmail(@RequestBody SendEmailReq request){
+    public ResponseEntity<HttpStatus> sendEmail(@RequestBody SendEmailReq request){
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
         String token = emailService.createVerificationToken(user);
         emailService.sendVerificationEmail(user.getEmail(), token);
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/verify-email")
-    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
-        authService.verifyEmail(token);
+    @PostMapping("/verify-email")
+    public ResponseEntity<String> verifyEmail(@RequestBody VerifyEmailReq request) {
+        authService.verifyEmail(request.token());
         return ResponseEntity.ok("이메일 인증이 완료되었습니다.");
     }
 
