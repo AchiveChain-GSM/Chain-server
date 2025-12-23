@@ -29,7 +29,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain) throws ServletException, IOException {
         String url = request.getRequestURI();
 
-        if(url.equals("/api/auth/sign-up") || url.equals("/api/auth/login")){
+        if (url.equals("/api/auth/sign-up") ||
+                url.equals("/api/auth/login") ||
+                url.equals("/api/auth/send-email") ||
+                url.equals("/api/auth/verify-email") ||
+                url.equals("/api/health")) {
             filterChain.doFilter(request, response);
             return;
         }
