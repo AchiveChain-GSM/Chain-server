@@ -104,10 +104,9 @@ public class PostService {
     }
 
     @Transactional
-    public void reportPost(PostReportReq postReportReq, Long user_id) {
-
-        Post post = postRepository.findPostById(postReportReq.post_id());
-        User user = userRepository.getById(user_id);
+    public void reportPost(PostReportReq postReportReq, Long postId) {
+        Post post = postRepository.findPostById(postId);
+        User user = securityUtil.getCurrentUser();
 
         PostReport postReport = PostReport.builder()
                         .title(postReportReq.title())

@@ -1,3 +1,3 @@
 package org.example.chain.domain.post.data.req;
 
-public record PostReportReq(String title, String description, Long post_id) {}
+public record PostReportReq(String title, String description) {}

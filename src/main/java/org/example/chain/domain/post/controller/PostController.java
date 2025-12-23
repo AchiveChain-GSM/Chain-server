@@ -43,12 +43,12 @@ public class PostController {
     }
 
 
-    @PostMapping("/reportCreate/{user_id}")
+    @PostMapping("/report/{postId}")
     public ResponseEntity<Void> createReportPost (
-            @PathVariable Long user_id,
+            @PathVariable Long postId,
             @RequestBody PostReportReq report
             ) {
-        postService.reportPost(report, user_id);
+        postService.reportPost(report, postId);
         return ResponseEntity.ok().build();
     }
 
