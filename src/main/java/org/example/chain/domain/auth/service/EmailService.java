@@ -50,7 +50,7 @@ public class EmailService {
     public void sendVerificationEmail(String toEmail, String token) {
         String subject = "[Chain] 이메일 인증 안내";
 
-        String baseUrl = "https://port-0-chain-server-mjgfqy3sbea3654a.sel3.cloudtype.app/";
+        String baseUrl = "https://port-0-chain-server-mjgfqy3sbea3654a.sel3.cloudtype.app";
         String verificationUrl = baseUrl + "/api/auth/verify-email?token=" + token;
 
         String content = """
