@@ -20,7 +20,6 @@ public record PostReadRes(
         Long bookmarks,
         boolean isLiked,
         boolean isBookmarked) {
-public record PostReadRes(Long postId, String title, String author, String content, List<String> tags, String firstImageUrl, Instant createAt, Long likes, Long views, Long bookmarks, boolean isLiked, boolean isBookmarked) {
     public static PostReadRes from(Post post, String firstImageUrl, boolean isLiked, boolean isBookmarked) {
         return new PostReadRes(
                 post.getId(),
