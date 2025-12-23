@@ -29,7 +29,7 @@ public class Image {
     private String imageName;
 
     @Builder
-    public Image(String imageKey, String imageName, int width, int height) {
+    public Image(String imageKey, String imageName) {
         this.imageKey = imageKey;
         this.imageName = imageName;
     }

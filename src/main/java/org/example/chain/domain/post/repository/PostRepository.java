@@ -76,19 +76,19 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Long> findIdsByIntegratedSearch(@Param("keyword") String keyword, Pageable pageable);
 
     // 3. 전체 목록 조회 시 ID만 가져오는 메서드 추가
-    @Query("SELECT p.id FROM Post p")
+    @Query("SELECT DISTINCT p.id FROM Post p")
     Page<Long> findAllIds(Pageable pageable);
 
     // 4. 특정 유저의 글 ID만 가져오기
-    @Query("SELECT p.id FROM Post p WHERE p.user.id = :userId")
+    @Query("SELECT DISTINCT p.id FROM Post p WHERE p.user.id = :userId")
     Page<Long> findIdsByUserId(@Param("userId") Long userId, Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT p FROM Post p WHERE p.id = :postId")
+    @Query("SELECT DISTINCT p FROM Post p WHERE p.id = :postId")
     Optional<Post> findByIdWithLock(@Param("postId") Long postId);
 
-    @Query("SELECT p FROM Post p WHERE p.id = :post_id")
-    Post findPostById(@Param(value = "post_id") Long post_id);
+    @Query("SELECT DISTINCT p FROM Post p WHERE p.id = :post_id")
+    Optional<Post> findPostById(@Param(value = "post_id") Long post_id);
 
 
 }

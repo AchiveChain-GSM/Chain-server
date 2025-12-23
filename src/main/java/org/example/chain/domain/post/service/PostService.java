@@ -35,7 +35,6 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final PostReportRepository postReportRepository;
     private final ImageRepository imageRepository;
-    private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final S3Service s3Service;
     private final PostBookmarkRepository bookmarkRepository;
@@ -95,7 +94,7 @@ public class PostService {
 
         //새로고침 할 게시물 조회
         Post post = postRepository.findById(postUpdateReq.post_id())
-                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new PostNotFoundException("수정할 게시글을 찾을 수 없습니다."));
 
         //제목, 내용 수정
         post.updatePost(postUpdateReq);
@@ -341,7 +340,7 @@ public class PostService {
     public void toggleLike(Long postId) {
         User user = securityUtil.getCurrentUser();
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("게시글 없음"));
+                .orElseThrow(() -> new PostNotFoundException("좋아요할, 해당 게시글 없음"));
 
         Optional<PostLike> postLikeOptional = postLikeRepository.findByPostIdAndUserId(postId, user.getId());
 
@@ -360,7 +359,7 @@ public class PostService {
     public void toggleBookmark(Long postId) {
         User user = securityUtil.getCurrentUser();
         Post post = postRepository.findByIdWithLock(postId)
-                .orElseThrow(PostNotFoundException::new);
+                .orElseThrow(() -> new PostNotFoundException("즐겨착기할, 해당 게시글 없음"));
 
         bookmarkRepository.findByPostIdAndUserId(postId, user.getId())
                 .ifPresentOrElse(
@@ -400,12 +399,12 @@ public class PostService {
     public void createReport(PostReportReq postReportReq, Long post_id) {
 
         //신고 게시물, 신고자 조회
-        Post post = postRepository.findPostById(post_id);
+        Post post = postRepository.findPostById(post_id)
+                .orElseThrow(() -> new PostNotFoundException("신고할 게시글 없음"));
         User user = securityUtil.getCurrentUser();
 
         //신고 접수 생성
         PostReport postReport = PostReport.builder()
-                .title(postReportReq.title())
                 .description(postReportReq.description())
                 .post(post)
                 .user(user)
@@ -431,7 +430,6 @@ public class PostService {
         return postReport.map(pr -> {
             return PostReportRes.builder()
                     .post_id(pr.getPost().getId())
-                    .title(pr.getTitle())
                     .description(pr.getDescription())
                     .build();
         });
@@ -443,7 +441,8 @@ public class PostService {
     public void deleteReport(Long report_id) {
 
         //report_id로 해당하는 게시물을 찾음
-        Post post = postReportRepository.findReportPostByPost_id(report_id);
+        Post post = postReportRepository.findReportPostByPost_id(report_id)
+                .orElseThrow(() -> new PostNotFoundException("신고 게시물 목록에 해당 게시물이 없음"));
 
         //게시물의 일치하는 PostReport를 찾고 해당하는 PostReport를 삭제
         PostReport postReport = post.getPostReports().stream()
@@ -456,7 +455,8 @@ public class PostService {
     //신고 접수 ID를 통해 해당 게시물 삭제 처리
     @Transactional
     public void deleteReportPost(Long report_id) {
-        Post post = postReportRepository.findReportPostByPost_id(report_id);
+        Post post = postReportRepository.findReportPostByPost_id(report_id)
+                .orElseThrow(() -> new PostNotFoundException("신고 게시물 목록에 해당 게시물이 없음"));
         deletePost(post.getId());
     }
 

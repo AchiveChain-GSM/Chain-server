@@ -10,15 +10,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostReportRepository extends JpaRepository<PostReport,Long> {
-    List<PostReport> user(User user);
 
-    @Query("SELECT pr FROM PostReport pr JOIN FETCH pr.post WHERE pr.user.id = :userId")
+    @Query(value = "SELECT pr FROM PostReport pr JOIN FETCH pr.post WHERE pr.user.id = :userId",
+    countQuery = "SELECT COUNT(pr) FROM PostReport pr WHERE pr.user.id = :userId")
     Page<PostReport> findPostReportByUserId(@Param(value = "user_id") Long user_id, Pageable pageable);
 
     @Query("SELECT pr.post FROM PostReport pr WHERE pr.report_id = :report_id")
-    Post findReportPostByPost_id(@Param(value = "report_id") Long report_id);
+    Optional<Post> findReportPostByPost_id(@Param(value = "report_id") Long report_id);
 }
 
 

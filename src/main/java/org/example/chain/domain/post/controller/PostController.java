@@ -61,12 +61,11 @@ public class PostController {
             @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<PostReportRes> postReports = postService.readReport(pageable);
-
         return ResponseEntity.ok(postReports);
     }
 
     //사용자 전용, 신고 접수 삭제 페이지
-    @GetMapping("/reportDelete/{post_id}")
+    @DeleteMapping("/reportDelete/{post_id}")
     public ResponseEntity<Void> deleteReportPost (
             @PathVariable Long post_id
     ){

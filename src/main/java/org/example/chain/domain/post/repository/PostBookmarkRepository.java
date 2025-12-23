@@ -16,7 +16,8 @@ public interface PostBookmarkRepository extends JpaRepository<PostBookmark, Long
 
     Optional<PostBookmark> findByPostIdAndUserId(Long postId, Long userId);
 
-    @Query("SELECT pb.post FROM PostBookmark pb WHERE pb.user.id = :userId")
+    @Query(value = "SELECT pb.post FROM PostBookmark pb WHERE pb.user.id = :userId",
+            countQuery = "SELECT COUNT(pb.post) FROM PostBookmark pb WHERE pb.user.id = :userId")
     Page<Post> findBookmarkedPosts(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT pb.post.id FROM PostBookmark pb WHERE pb.user.id = :userId")

@@ -56,7 +56,7 @@ public class PostReadController {
     }
 
     //가장 최근에 읽은 게시물 조회 페이지
-    @GetMapping("/viewed/")
+    @GetMapping("/viewed")
     public ResponseEntity<Page<PostReadRes>> readUserViewedPosts(
             @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC)
             Pageable pageable
@@ -132,7 +132,7 @@ public class PostReadController {
     }
 
     //사용자가, 즐겨찾기 한 게시물 조회 페이지
-    @GetMapping("/bookmarked/")
+    @GetMapping("/bookmarked")
     public ResponseEntity<Page<PostReadRes>> readUserBookmarkedPosts(
             @PageableDefault(size = 20) Pageable pageable
     ) {
