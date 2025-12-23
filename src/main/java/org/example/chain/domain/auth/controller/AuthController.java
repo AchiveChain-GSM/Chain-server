@@ -44,11 +44,8 @@ public class AuthController {
 
     @PostMapping("/send-email")
     public ResponseEntity<HttpStatus> sendEmail(@RequestBody SendEmailReq request){
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
-
-        String token = emailService.createVerificationToken(user);
-        emailService.sendVerificationEmail(user.getEmail(), token);
+        String token = emailService.createVerificationToken();
+        emailService.sendVerificationEmail(request.email(), token);
         return ResponseEntity.ok().build();
     }
 
