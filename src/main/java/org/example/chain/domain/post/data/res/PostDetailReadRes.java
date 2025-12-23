@@ -22,7 +22,9 @@ public record PostDetailReadRes(
         List<PostCommentReadRes> comments)
 {
     public static PostDetailReadRes from (Post post, Map<Long, String> images) {
-        return new PostDetailReadRes( post.getId(), post.getTitle(),
+        return new PostDetailReadRes(
+                post.getId(),
+                post.getTitle(),
                 post.getUser().getName(),
                 post.getCreateAt(),
                 post.getContent(),

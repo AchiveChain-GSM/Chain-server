@@ -45,12 +45,13 @@ public class PostService {
     private final PostTagRepository postTagRepository;
 
     @Transactional
-    public Long createPost(PostCreateReq request, Long user_id){
+    public Long createPost(PostCreateReq request){
+        User user = securityUtil.getCurrentUser();
+
         Post post = Post.builder()
                 .title(request.title())
                 .content(request.content())
-                .description(request.description())
-                .user(securityUtil.getCurrentUser())
+                .user(user)
                 .build();
 
         List<PostTag> postTags = request.tags().stream()
@@ -67,11 +68,12 @@ public class PostService {
         List<Image> images = new ArrayList<>();
         for(var imageFile : request.images()) {
 
-            String imageKey = s3Service.upload(imageFile, user_id.toString());
+            String imageKey = s3Service.upload(imageFile, user.getId().toString());
 
             Image image = Image.builder()
                     .imageKey(imageKey)
                     .imageName(imageFile.getOriginalFilename())
+                    .post(post)
                     .build();
             imageRepository.save(image);
 
@@ -219,7 +221,7 @@ public class PostService {
         // [Step 1] ID들만 페이징 조회
         Page<Long> postIdPage = postRepository.findAllIds(pageable);
 
-        return convertToDtoPage(postIdPage, pageable,  user_id);
+        return convertToDtoPage(postIdPage, pageable, user_id);
     }
 
     // 공통 변환 로직 (2단계 조회)

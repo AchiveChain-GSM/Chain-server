@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,11 +20,9 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
     private final PostService postService;
 
-    @PostMapping("/create/{user_id}")
-    public ResponseEntity<Void> createPost(
-            @PathVariable Long user_id,
-            @RequestBody PostCreateReq request){
-        Long postId = postService.createPost(request, user_id);
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> createPost(@ModelAttribute PostCreateReq request){
+        Long postId = postService.createPost(request);
         return ResponseEntity.created(java.net.URI.create("/api/posts/" + postId)).build();
     }
 

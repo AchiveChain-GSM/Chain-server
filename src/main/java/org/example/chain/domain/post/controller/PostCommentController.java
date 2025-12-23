@@ -25,9 +25,4 @@ public class PostCommentController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @GetMapping
-    public ResponseEntity<List<PostCommentReadRes>> readComments(
-            @PathVariable Long postId) {
-        return ResponseEntity.ok(commentService.readComments(postId));
-    }
 }
