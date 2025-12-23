@@ -7,6 +7,8 @@ import org.example.chain.domain.user.data.request.UpdateReq;
 import org.example.chain.domain.user.data.response.UserRes;
 import org.example.chain.domain.user.entity.CustomUserDetails;
 import org.example.chain.domain.user.repository.UserRepository;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.example.chain.domain.user.entity.User;
@@ -15,10 +17,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+
+    public CustomUserDetails loadUserByUsername(String email){
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("해당 이메일을 가진 사용자를 찾을 수 없습니다: " + email));
+
+        // 2. 찾은 엔티티를 CustomUserDetails로 감싸서 반환
+        return new CustomUserDetails(user);
+    }
 
     @Transactional
     public void createUser(SignUpReq request){
