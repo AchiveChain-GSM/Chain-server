@@ -34,7 +34,7 @@ public class UserService implements UserDetailsService {
     public void createUser(SignUpReq request){
         User user = new User(request, passwordEncoder.encode(request.password()));
 
-        String token = emailService.createVerificationToken(request.email());
+        String token = emailService.createVerificationToken();
         emailService.sendVerificationEmail(user.getEmail(), token);
 
         userRepository.save(user);
