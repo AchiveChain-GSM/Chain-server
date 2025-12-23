@@ -61,7 +61,7 @@ public class User {
     private List<PostLike> postLikes = new ArrayList<>();
 
     public User(SignUpReq request, String password){
-        this.name = request.name();
+        this.name = request.userName();
         this.email = request.email();
         this.password = password;
         this.roles.add(Authority.valueOf(request.role()));

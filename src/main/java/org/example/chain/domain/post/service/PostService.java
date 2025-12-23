@@ -36,6 +36,7 @@ public class PostService {
     private final PostReportRepository postReportRepository;
     private final ImageRepository imageRepository;
     private final UserRepository userRepository;
+    private final TagRepository tagRepository;
     private final S3Service s3Service;
     private final PostBookmarkRepository bookmarkRepository;
     private final PostTagRepository postTagRepository;
@@ -43,13 +44,14 @@ public class PostService {
 
     //게시물 생성
     @Transactional
-    public Long createPost(PostCreateReq request, Long user_id){
+    public Long createPost(PostCreateReq request){
+        User user = securityUtil.getCurrentUser();
 
         //제목, 내용, 작성자 추가
         Post post = Post.builder()
                 .title(request.title())
                 .content(request.content())
-                .user(securityUtil.getCurrentUser())
+                .user(user)
                 .build();
 
         //태그 추가
@@ -69,11 +71,12 @@ public class PostService {
         List<Image> images = new ArrayList<>();
         for(var imageFile : request.images()) {
 
-            String imageKey = s3Service.upload(imageFile, user_id.toString());
+            String imageKey = s3Service.upload(imageFile, user.getId().toString());
 
             Image image = Image.builder()
                     .imageKey(imageKey)
                     .imageName(imageFile.getOriginalFilename())
+                    .post(post)
                     .build();
             imageRepository.save(image);
 
@@ -87,43 +90,49 @@ public class PostService {
 
 
     @Transactional
-    public void updatePost(PostUpdateReq postUpdateReq, Long user_id) {
+    public void updatePost(PostUpdateReq postUpdateReq) {
+        User user = securityUtil.getCurrentUser();
 
         //새로고침 할 게시물 조회
-        Post post = postRepository.findPostById(postUpdateReq.post_id());
+        Post post = postRepository.findById(postUpdateReq.post_id())
+                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 
         //제목, 내용 수정
         post.updatePost(postUpdateReq);
 
         //태그 수정
-        post.getPostTags().clear();
-        List<PostTag> postTags = new ArrayList<>();
-        for(String tagName : postUpdateReq.tags()) {
-            Tag tag = tagService.getOrCreateTag(tagName);
-
-            PostTag postTag = new PostTag(post, tag);
-            postTagRepository.save(postTag);
-            postTags.add(postTag);
+        if (postUpdateReq.tags() != null) {
+            post.getPostTags().clear();
+            for (String tagName : postUpdateReq.tags()) {
+                Tag tag = tagRepository.findByName(tagName).orElseGet(() -> {
+                    Tag t = new Tag(tagName);
+                    return tagRepository.save(t);
+                });
+                PostTag postTag = new PostTag(post, tag);
+                postTagRepository.save(postTag);
+                post.getPostTags().add(postTag);
+            }
         }
-        post.getPostTags().addAll(postTags);
-
 
         //이미지 삭제
         removeImagesInPost(post, post.getImages());
 
         //이미지 추가
-        List<Image> images = new ArrayList<>();
-        for(var imageFile : postUpdateReq.images()) {
-            String imageKey = s3Service.upload(imageFile, user_id.toString());
-            imageRepository.save(
-                    Image.builder()
-                    .imageKey(imageKey)
-                    .imageName(imageFile.getOriginalFilename())
-                    .post(post)
-                    .build()
-            );
+        if (postUpdateReq.images() != null && !postUpdateReq.images().isEmpty()) {
+            for (var imageFile : postUpdateReq.images()) {
+                if (imageFile.isEmpty()) continue; // 실제 파일이 있는지 확인
+
+                String imageKey = s3Service.upload(imageFile, user.getId().toString());
+                Image image = Image.builder()
+                        .imageKey(imageKey)
+                        .imageName(imageFile.getOriginalFilename())
+                        .post(post) // 연관 관계 설정
+                        .build();
+
+                imageRepository.save(image);
+                post.getImages().add(image); // 객체 상태 동기화
+            }
         }
-        post.getImages().addAll(images);
     }
 
 
@@ -131,12 +140,11 @@ public class PostService {
     //removeImageById를 통해 S3에 있는 image 까지 삭제해야 합니다.
     @Transactional
     public void deletePost(Long post_id) {
-
-        Post post = postRepository.findPostById(post_id);
+        Post post = postRepository.findById(post_id)
+                .orElseThrow(() -> new PostNotFoundException("이미 삭제되었거나 존재하지 않는 게시글입니다."));
 
         removeImagesInPost(post, post.getImages());
         postRepository.delete(post);
-
     }
 
     //게시물 내 삭제할 이미지 목록을 가지고 S3 내에서도, 게시물 자체에서도 삭제
@@ -389,11 +397,11 @@ public class PostService {
 
     //사용자 전용, 게시물 신고 접수
     @Transactional
-    public void createReport(PostReportReq postReportReq, Long user_id) {
+    public void createReport(PostReportReq postReportReq, Long post_id) {
 
         //신고 게시물, 신고자 조회
-        Post post = postRepository.findPostById(postReportReq.post_id());
-        User user = userRepository.getById(user_id);
+        Post post = postRepository.findPostById(post_id);
+        User user = securityUtil.getCurrentUser();
 
         //신고 접수 생성
         PostReport postReport = PostReport.builder()
@@ -412,10 +420,12 @@ public class PostService {
 
     //신고자 ID를 가지고 신고 접수 조회
     @Transactional(readOnly = true)
-    public Page<PostReportRes> readReport(Pageable pageable, Long user_id) {
+    public Page<PostReportRes> readReport(Pageable pageable) {
+
+        User user = securityUtil.getCurrentUser();
 
         //신고자의 신고 목록 조회
-        Page<PostReport> postReport = postReportRepository.findPostReportByUserId(user_id, pageable);
+        Page<PostReport> postReport = postReportRepository.findPostReportByUserId(user.getId(), pageable);
 
         //신고 목록 반환
         return postReport.map(pr -> {

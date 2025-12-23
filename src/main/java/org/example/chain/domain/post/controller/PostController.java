@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,26 +21,23 @@ public class PostController {
     private final PostService postService;
 
     //게시물 생성 페이지, 바로 조회할 수 있는 URL 반환
-    @PostMapping("/create/{user_id}")
-    public ResponseEntity<Void> createPost(
-            @PathVariable Long user_id,
-            @RequestBody PostCreateReq request){
-        Long postId = postService.createPost(request, user_id);
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> createPost(@ModelAttribute PostCreateReq request){
+        Long postId = postService.createPost(request);
         return ResponseEntity.created(java.net.URI.create("/api/posts/" + postId)).build();
     }
 
     //게시물 수정 페이지
-    @PostMapping("/update/{user_id}")
+    @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updatePost(
-        @PathVariable Long user_id,
-        @RequestBody PostUpdateReq updateRequest
+            @ModelAttribute PostUpdateReq updateRequest // @RequestBody -> @ModelAttribute
     ){
-        postService.updatePost(updateRequest, user_id);
+        postService.updatePost(updateRequest);
         return ResponseEntity.noContent().build();
     }
 
     //게시물 삭제 페이지
-    @GetMapping("/delete/{post_id}")
+    @DeleteMapping("/delete/{post_id}")
     public ResponseEntity<Void> deletePost(
             @PathVariable Long post_id
     ){
@@ -48,22 +46,21 @@ public class PostController {
     }
 
     //신고 접수 생성 페이지
-    @PostMapping("/reportCreate/{user_id}")
+    @PostMapping("/report/{postId}")
     public ResponseEntity<Void> createReportPost (
-            @PathVariable Long user_id,
+            @PathVariable Long post_id,
             @RequestBody PostReportReq report
             ) {
-        postService.createReport(report, user_id);
+        postService.createReport(report, post_id);
         return ResponseEntity.ok().build();
     }
 
     //사용자, 신고 접수 목록 조회 페이지
-    @GetMapping("/reportRead/{user_id}")
+    @GetMapping("/reportRead")
     public ResponseEntity<Page<PostReportRes>> readReportPost (
-            @PathVariable Long user_id,
             @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        Page<PostReportRes> postReports = postService.readReport(pageable, user_id);
+        Page<PostReportRes> postReports = postService.readReport(pageable);
 
         return ResponseEntity.ok(postReports);
     }
