@@ -44,7 +44,7 @@ public class AuthController {
 
     @PostMapping("/send-email")
     public ResponseEntity<HttpStatus> sendEmail(@RequestBody SendEmailReq request){
-        String token = emailService.createVerificationToken();
+        String token = emailService.createVerificationToken(request.email());
         emailService.sendVerificationEmail(request.email(), token);
         return ResponseEntity.ok().build();
     }

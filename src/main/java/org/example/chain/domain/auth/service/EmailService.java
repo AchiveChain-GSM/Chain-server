@@ -21,12 +21,13 @@ public class EmailService {
     private final EmailVerificationTokenRepository tokenRepository;
 
         @Transactional
-        public String createVerificationToken() {
+        public String createVerificationToken(String email) {
             String token = UUID.randomUUID().toString();
 
             EmailVerificationToken verificationToken =
                     EmailVerificationToken.builder()
                             .token(token)
+                            .email(email)
                             .expiryDate(Instant.now().plus(1, ChronoUnit.DAYS))
                             .build();
 
