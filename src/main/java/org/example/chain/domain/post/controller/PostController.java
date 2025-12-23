@@ -26,12 +26,11 @@ public class PostController {
         return ResponseEntity.created(java.net.URI.create("/api/posts/" + postId)).build();
     }
 
-    @PostMapping("/update/{user_id}")
+    @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updatePost(
-        @PathVariable Long user_id,
-        @RequestBody PostUpdateReq updateRequest
+            @ModelAttribute PostUpdateReq updateRequest // @RequestBody -> @ModelAttribute
     ){
-        postService.updatePost(updateRequest, user_id);
+        postService.updatePost(updateRequest);
         return ResponseEntity.noContent().build();
     }
 

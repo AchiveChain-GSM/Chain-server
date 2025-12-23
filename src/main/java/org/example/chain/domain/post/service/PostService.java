@@ -89,6 +89,9 @@ public class PostService {
     }
 
     String getFirstImageUrl(Post post) {
+        if (post.getImages() == null || post.getImages().isEmpty()) {
+            return null; // 혹은 기본 이미지 URL
+        }
         return s3Service.generateGetUrl(post.getImages().getFirst().getImageKey());
     }
 
@@ -148,40 +151,49 @@ public class PostService {
     }
 
     @Transactional
-    public void updatePost(PostUpdateReq postUpdateReq, Long user_id) {
-        Post post = postRepository.findPostById(postUpdateReq.post_id());
+    public void updatePost(PostUpdateReq postUpdateReq) {
+        User user = securityUtil.getCurrentUser();
+        // 1. 게시글 조회
+        Post post = postRepository.findById(postUpdateReq.post_id())
+                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 
+        // 2. 기본 정보 업데이트 (제목, 내용 등)
         post.updatePost(postUpdateReq);
 
-        post.getPostTags().clear();
-
-        List<PostTag> postTags = new ArrayList<>();
-        for(String tagName : postUpdateReq.tags()) {
-            Tag tag = tagRepository.findByName(tagName).orElseGet(
-                    () -> {
-                        Tag t = new Tag(tagName);
-                        tagRepository.save(t);
-                        return t;
-                    }
-            );
-
-            PostTag postTag = new PostTag(post, tag);
-            postTagRepository.save(postTag);
-            postTags.add(postTag);
+        // 3. 태그 업데이트 (null 체크 추가)
+        if (postUpdateReq.tags() != null) {
+            post.getPostTags().clear();
+            for (String tagName : postUpdateReq.tags()) {
+                Tag tag = tagRepository.findByName(tagName).orElseGet(() -> {
+                    Tag t = new Tag(tagName);
+                    return tagRepository.save(t);
+                });
+                PostTag postTag = new PostTag(post, tag);
+                postTagRepository.save(postTag);
+                post.getPostTags().add(postTag);
+            }
         }
 
-        removeImagesById(postUpdateReq.removeImage_ids());
+        // 4. 기존 이미지 삭제 (null 체크 추가)
+        if (postUpdateReq.removeImage_ids() != null && !postUpdateReq.removeImage_ids().isEmpty()) {
+            removeImagesById(postUpdateReq.removeImage_ids());
+        }
 
-        List<Image> images = new ArrayList<>();
-        for(var imageFile : postUpdateReq.images()) {
-            String imageKey = s3Service.upload(imageFile, user_id.toString());
-            imageRepository.save(
-                    Image.builder()
-                    .imageKey(imageKey)
-                    .imageName(imageFile.getOriginalFilename())
-                    .post(post)
-                    .build()
-            );
+        // 5. 새로운 이미지 추가 (null 및 빈 파일 체크 추가)
+        if (postUpdateReq.images() != null && !postUpdateReq.images().isEmpty()) {
+            for (var imageFile : postUpdateReq.images()) {
+                if (imageFile.isEmpty()) continue; // 실제 파일이 있는지 확인
+
+                String imageKey = s3Service.upload(imageFile, user.getId().toString());
+                Image image = Image.builder()
+                        .imageKey(imageKey)
+                        .imageName(imageFile.getOriginalFilename())
+                        .post(post) // 연관 관계 설정
+                        .build();
+
+                imageRepository.save(image);
+                post.getImages().add(image); // 객체 상태 동기화
+            }
         }
     }
 
