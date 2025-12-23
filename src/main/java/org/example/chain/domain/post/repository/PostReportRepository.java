@@ -16,6 +16,9 @@ public interface PostReportRepository extends JpaRepository<PostReport,Long> {
 
     @Query("SELECT pr FROM PostReport pr JOIN FETCH pr.post WHERE pr.user.id = :userId")
     Page<PostReport> findPostReportByUserId(@Param(value = "user_id") Long user_id, Pageable pageable);
+
+    @Query("SELECT pr.post FROM PostReport pr WHERE pr.report_id = :report_id")
+    Post findReportPostByPost_id(@Param(value = "report_id") Long report_id);
 }
 
 

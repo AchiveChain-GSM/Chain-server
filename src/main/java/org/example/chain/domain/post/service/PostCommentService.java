@@ -23,21 +23,26 @@ public class PostCommentService {
     private final PostRepository postRepository;
     private final SecurityUtil securityUtil;
 
+    //해당 게시물에 댓글 생성
     @Transactional
     public void createComment(Long postId, PostCommentCreateReq request) {
 
+        //게시물 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("해당 게시글이 존재하지 않습니다."));
 
+        //댓글 생성
         PostComment comment = PostComment.builder()
                 .post(post)
                 .user(securityUtil.getCurrentUser())
                 .content(request.content())
                 .build();
 
+        post.getPostComments().add(comment);
         commentRepository.save(comment);
     }
 
+    //
     @Transactional(readOnly = true)
     public List<PostCommentReadRes> readComments(Long postId) {
 
@@ -45,6 +50,7 @@ public class PostCommentService {
         postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("해당 게시글이 존재하지 않습니다."));
 
+        //해당 게시물의 댓글 목록 반환
         return commentRepository.findAllByPostId(postId).stream()
                 .map(PostCommentReadRes::from)
                 .toList();

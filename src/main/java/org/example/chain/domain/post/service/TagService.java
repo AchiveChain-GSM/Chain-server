@@ -14,6 +14,7 @@ public class TagService { // 별도 서비스로 분리 권장
 
     private final TagRepository tagRepository;
 
+    //태그 이름을 기지고, 기존에 있으면 반환, 없으면 새로 생성해서 반환 하는 함수
     @Transactional(propagation = Propagation.REQUIRES_NEW) // 독립된 트랜잭션 사용
     public Tag getOrCreateTag(String tagName) {
         return tagRepository.findByName(tagName)

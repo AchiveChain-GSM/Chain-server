@@ -16,6 +16,7 @@ import java.util.List;
 public class PostCommentController {
     private final PostCommentService commentService;
 
+    //게시물에, 댓글 생성 페이지
     @PostMapping
     public ResponseEntity<Void> createComment(
             @PathVariable Long postId,
@@ -25,6 +26,7 @@ public class PostCommentController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    //
     @GetMapping
     public ResponseEntity<List<PostCommentReadRes>> readComments(
             @PathVariable Long postId) {
