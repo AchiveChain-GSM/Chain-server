@@ -48,10 +48,10 @@ public class PostController {
     //신고 접수 생성 페이지
     @PostMapping("/report/{postId}")
     public ResponseEntity<Void> createReportPost (
-            @PathVariable Long post_id,
+            @PathVariable Long postId,
             @RequestBody PostReportReq report
             ) {
-        postService.createReport(report, post_id);
+        postService.createReport(report, postId);
         return ResponseEntity.ok().build();
     }
 
