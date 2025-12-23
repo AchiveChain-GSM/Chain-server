@@ -1,28 +1,30 @@
 spring:
   application:
-    name: chain
+    name: ${APP_NAME:chain}
 
   datasource:
-    url: jdbc:mariadb://svc.sel3.cloudtype.app:30764/user?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
-    username: root
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: none
-    show-sql: false
+      ddl-auto: ${JPA_DDL_AUTO:none}
+    show-sql: ${JPA_SHOW_SQL:false}
     database-platform: org.hibernate.dialect.MariaDBDialect
     properties:
       hibernate:
         format_sql: false
         default_batch_fetch_size: 100
-        jdbc.batch_size: 50
+        jdbc:
+          batch_size: 50
         order_inserts: true
         order_updates: true
+
   mail:
-    host: smtp.gmail.com
-    port: 587
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
     username: ${EMAIL}
     password: ${APP_PASSWORD}
     properties:
@@ -33,20 +35,20 @@ spring:
             enable: true
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   compression:
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
     min-response-size: 2048
 
 jwt:
-  access-token-expiration-minutes: 10
-  refresh-token-expiration-days: 7
+  access-token-expiration-minutes: ${JWT_ACCESS_EXPIRE_MIN:10}
+  refresh-token-expiration-days: ${JWT_REFRESH_EXPIRE_DAYS:7}
 
 aws:
   s3:
     access-key: ${AWS_ACCESS_KEY}
     secret-key: ${AWS_SECRET_KEY}
-    region: ap-northeast-2
-    bucket: ideafestival-archive.chain
-    url-prefix: https://ideafestival-archive.chain.s3.ap-northeast-2.amazonaws.com
+    region: ${AWS_REGION:ap-northeast-2}
+    bucket: ${AWS_S3_BUCKET}
+    url-prefix: ${AWS_S3_URL_PREFIX}
