@@ -49,7 +49,6 @@ public class PostService {
         Post post = Post.builder()
                 .title(request.title())
                 .content(request.content())
-                .description(request.description())
                 .user(securityUtil.getCurrentUser())
                 .build();
 
