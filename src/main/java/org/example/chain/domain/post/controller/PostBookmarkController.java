@@ -15,6 +15,7 @@ public class PostBookmarkController {
 
     private final PostService postService;
 
+    //게시물에 북마크 적용 페이지
     @PostMapping
     public ResponseEntity<Void> toggleBookmark(@PathVariable Long postId) {
         postService.toggleBookmark(postId);

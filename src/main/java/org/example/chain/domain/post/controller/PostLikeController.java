@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostLikeController {
     private final PostService postService;
 
+    //게시물에 좋아요 적용 페이지
     @PostMapping
     public ResponseEntity<Void> toggleLike(@PathVariable Long postId) {
         postService.toggleLike(postId);

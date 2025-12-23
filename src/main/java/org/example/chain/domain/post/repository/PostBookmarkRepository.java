@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import java.util.Set;
 
 public interface PostBookmarkRepository extends JpaRepository<PostBookmark, Long> {
 
@@ -17,6 +18,9 @@ public interface PostBookmarkRepository extends JpaRepository<PostBookmark, Long
 
     @Query("SELECT pb.post FROM PostBookmark pb WHERE pb.user.id = :userId")
     Page<Post> findBookmarkedPosts(@Param("userId") Long userId, Pageable pageable);
+
+    @Query("SELECT pb.post.id FROM PostBookmark pb WHERE pb.user.id = :userId")
+    Set<Long> findBookmarkedPostIds(@Param("userId") Long userId);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Post p SET p.bookmarks = p.bookmarks + 1 WHERE p.id = :postId")

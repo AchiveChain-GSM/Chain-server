@@ -20,12 +20,14 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
     private final PostService postService;
 
+    //게시물 생성 페이지, 바로 조회할 수 있는 URL 반환
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createPost(@ModelAttribute PostCreateReq request){
         Long postId = postService.createPost(request);
         return ResponseEntity.created(java.net.URI.create("/api/posts/" + postId)).build();
     }
 
+    //게시물 수정 페이지
     @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updatePost(
             @ModelAttribute PostUpdateReq updateRequest // @RequestBody -> @ModelAttribute
@@ -34,6 +36,7 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
+    //게시물 삭제 페이지
     @DeleteMapping("/delete/{post_id}")
     public ResponseEntity<Void> deletePost(
             @PathVariable Long post_id
@@ -42,26 +45,27 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
-
+    //신고 접수 생성 페이지
     @PostMapping("/report/{postId}")
     public ResponseEntity<Void> createReportPost (
-            @PathVariable Long postId,
+            @PathVariable Long post_id,
             @RequestBody PostReportReq report
             ) {
-        postService.reportPost(report, postId);
+        postService.createReport(report, post_id);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/reportRead/{user_id}")
+    //사용자, 신고 접수 목록 조회 페이지
+    @GetMapping("/reportRead")
     public ResponseEntity<Page<PostReportRes>> readReportPost (
-            @PathVariable Long user_id,
             @PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        Page<PostReportRes> postReports = postService.readReport(pageable, user_id);
+        Page<PostReportRes> postReports = postService.readReport(pageable);
 
         return ResponseEntity.ok(postReports);
     }
 
+    //사용자 전용, 신고 접수 삭제 페이지
     @GetMapping("/reportDelete/{post_id}")
     public ResponseEntity<Void> deleteReportPost (
             @PathVariable Long post_id
