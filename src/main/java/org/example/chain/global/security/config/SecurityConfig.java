@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.chain.global.security.auth.handler.JwtAccessDeniedHandler;
 import org.example.chain.global.security.auth.handler.JwtAuthenticationEntryPoint;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -46,9 +47,14 @@ public class SecurityConfig {
                 // HTTP 요청에 대한 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/sign-up",
-                                "/api/auth/send-email", "/api/auth/verify-email").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/auth/sign-up").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/send-email").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/verify-email").permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/api/health").permitAll()
+
                         .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
