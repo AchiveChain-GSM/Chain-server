@@ -32,9 +32,6 @@ public class Post {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "description")
-    private String description;
-
     @Column(name = "content")
     private String content;
 
@@ -83,7 +80,6 @@ public class Post {
 
     public void updatePost(PostUpdateReq postUpdateReq) {
         this.title = postUpdateReq.title();
-        this.description = postUpdateReq.description();
         this.content = postUpdateReq.content();
     }
 
