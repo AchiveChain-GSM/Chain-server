@@ -1,6 +1,7 @@
 package org.example.chain.domain.auth.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.chain.domain.auth.data.request.ChangePasswordReq;
 import org.example.chain.domain.auth.data.request.LoginReq;
 import org.example.chain.domain.auth.data.request.SendEmailReq;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -44,6 +46,9 @@ public class AuthController {
 
     @PostMapping("/send-email")
     public ResponseEntity<HttpStatus> sendEmail(@RequestBody SendEmailReq request){
+
+        log.info("request.email = {}", request.email());
+
         String token = emailService.createVerificationToken(request.email());
         emailService.sendVerificationEmail(request.email(), token);
         return ResponseEntity.ok().build();
