@@ -55,7 +55,7 @@ public class S3Service {
 
             s3Client.putObject(request, RequestBody.fromBytes(file.getBytes()));
 
-            return "/" + key;
+            return key;
         } catch (IOException e) {
             throw new PostImageUploadFailedException("파일 삭제 실패");
         } catch (S3Exception e) {

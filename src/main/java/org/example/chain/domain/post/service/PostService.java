@@ -206,14 +206,16 @@ public class PostService {
     }
 
 
+    @Transactional
     public void deletePost(Long post_id) {
+        Post post = postRepository.findById(post_id)
+                .orElseThrow(() -> new PostNotFoundException("이미 삭제되었거나 존재하지 않는 게시글입니다."));
 
-        Post post = postRepository.getPostById(post_id);
+        for (Image image : post.getImages()) {
+            s3Service.delete(image.getImageKey());
+        }
 
-        removeImagesById(post.getImages().stream()
-                .map(Image::getImage_id).toList());
         postRepository.delete(post);
-
     }
 
 

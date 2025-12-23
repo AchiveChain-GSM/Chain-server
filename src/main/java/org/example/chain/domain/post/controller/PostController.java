@@ -34,7 +34,7 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/delete/{post_id}")
+    @DeleteMapping("/delete/{post_id}")
     public ResponseEntity<Void> deletePost(
             @PathVariable Long post_id
     ){
