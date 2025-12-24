@@ -3,7 +3,6 @@ package org.example.chain.domain.auth.service;
 import lombok.RequiredArgsConstructor;
 import org.example.chain.domain.auth.entity.EmailVerificationToken;
 import org.example.chain.domain.auth.repository.EmailVerificationTokenRepository;
-import org.example.chain.domain.user.entity.User;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -28,6 +27,7 @@ public class EmailService {
                     EmailVerificationToken.builder()
                             .token(token)
                             .email(email)
+                            .verified(false)
                             .expiryDate(Instant.now().plus(1, ChronoUnit.DAYS))
                             .build();
 
@@ -45,24 +45,22 @@ public class EmailService {
             throw new IllegalArgumentException("만료된 토큰");
         }
 
-        tokenRepository.delete(verificationToken);
+        verificationToken.setVerified(true);
+
     }
 
     public void sendVerificationEmail(String toEmail, String token) {
         String subject = "[Chain] 이메일 인증 안내";
 
-        String baseUrl = "https://port-0-chain-server-mjgfqy3sbea3654a.sel3.cloudtype.app";
-        String verificationUrl = baseUrl + "/api/auth/verify-email?token=" + token;
-
         String content = """
                 안녕하세요.
                 
-                아래 링크를 클릭하여 이메일 인증을 완료해주세요.
+                아래 문자를 이용하여 이메일 인증을 완료해주세요.
                 
                 %s
                 
                 감사합니다.
-                """.formatted(verificationUrl);
+                """.formatted(token);
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
@@ -70,5 +68,12 @@ public class EmailService {
         message.setText(content);
 
         mailSender.send(message);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isEmailVerified(String email) {
+        return tokenRepository.findByEmail(email)
+                .filter(EmailVerificationToken::isVerified)
+                .isPresent();
     }
 }

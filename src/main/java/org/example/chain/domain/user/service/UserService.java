@@ -1,6 +1,7 @@
 package org.example.chain.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.chain.domain.auth.repository.EmailVerificationTokenRepository;
 import org.example.chain.domain.auth.service.EmailService;
 import org.example.chain.domain.user.data.request.SignUpReq;
 import org.example.chain.domain.user.data.request.UpdateReq;
@@ -21,6 +22,7 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final EmailVerificationTokenRepository emailVerificationTokenRepository;
 
     public CustomUserDetails loadUserByUsername(String email){
         User user = userRepository.findByEmail(email)
@@ -32,12 +34,17 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void createUser(SignUpReq request){
-        User user = new User(request, passwordEncoder.encode(request.password()));
+        if (!emailService.isEmailVerified(request.email())) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        }
 
-        String token = emailService.createVerificationToken(request.email());
-        emailService.sendVerificationEmail(user.getEmail(), token);
+        User user = new User(request, passwordEncoder.encode(request.password()));
+        user.verifyEmail();
 
         userRepository.save(user);
+        emailVerificationTokenRepository
+                .delete(emailVerificationTokenRepository.findByEmail(request.email())
+                        .orElseThrow(() -> new IllegalArgumentException("해당 토큰을 찾을 수 없습니다.")));
     }
 
     @Transactional
@@ -56,9 +63,17 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void updateUser(UpdateReq request){
+        if (!emailService.isEmailVerified(request.email())) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        }
+
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 사용자를 찾을 수 없음"));
         user.update(request, passwordEncoder.encode(request.password()));
+
+        emailVerificationTokenRepository
+                .delete(emailVerificationTokenRepository.findByEmail(request.email())
+                        .orElseThrow(() -> new IllegalArgumentException("해당 토큰을 찾을 수 없습니다.")));
     }
 
     @Transactional

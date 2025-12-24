@@ -1,16 +1,14 @@
 package org.example.chain.domain.auth.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.chain.domain.user.entity.User;
 
 import java.time.Instant;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -27,4 +25,7 @@ public class EmailVerificationToken {
 
     @Column(nullable = false)
     private Instant expiryDate;
+
+    @Column(nullable = false)
+    private boolean verified;
 }

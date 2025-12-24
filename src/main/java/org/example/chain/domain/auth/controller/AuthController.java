@@ -55,8 +55,8 @@ public class AuthController {
     }
 
     @PostMapping("/verify-email")
-    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
-        authService.verifyEmail(token);
+    public ResponseEntity<String> verifyEmail(@RequestBody VerifyEmailReq request) {
+        authService.verifyEmail(request.token());
         return ResponseEntity.ok("이메일 인증이 완료되었습니다.");
     }
 
