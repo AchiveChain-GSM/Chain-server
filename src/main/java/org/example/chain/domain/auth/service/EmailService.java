@@ -18,8 +18,9 @@ import java.util.UUID;
 public class EmailService {
     private final JavaMailSender mailSender;
     private final EmailVerificationTokenRepository tokenRepository;
+    private final EmailVerificationTokenRepository emailVerificationTokenRepository;
 
-        @Transactional
+    @Transactional
         public String createVerificationToken(String email) {
             String token = UUID.randomUUID().toString();
 
@@ -45,8 +46,7 @@ public class EmailService {
             throw new IllegalArgumentException("만료된 토큰");
         }
 
-        verificationToken.setVerified(true);
-
+        emailVerificationTokenRepository.delete(verificationToken);
     }
 
     public void sendVerificationEmail(String toEmail, String token) {
@@ -68,12 +68,5 @@ public class EmailService {
         message.setText(content);
 
         mailSender.send(message);
-    }
-
-    @Transactional(readOnly = true)
-    public boolean isEmailVerified(String email) {
-        return tokenRepository.findByEmail(email)
-                .filter(EmailVerificationToken::isVerified)
-                .isPresent();
     }
 }

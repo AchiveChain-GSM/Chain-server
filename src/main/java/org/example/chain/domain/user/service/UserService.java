@@ -34,17 +34,11 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void createUser(SignUpReq request){
-        if (!emailService.isEmailVerified(request.email())) {
-            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
-        }
 
         User user = new User(request, passwordEncoder.encode(request.password()));
         user.verifyEmail();
 
         userRepository.save(user);
-        emailVerificationTokenRepository
-                .delete(emailVerificationTokenRepository.findByEmail(request.email())
-                        .orElseThrow(() -> new IllegalArgumentException("해당 토큰을 찾을 수 없습니다.")));
     }
 
     @Transactional
@@ -63,9 +57,6 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void updateUser(UpdateReq request){
-        if (!emailService.isEmailVerified(request.email())) {
-            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
-        }
 
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 사용자를 찾을 수 없음"));

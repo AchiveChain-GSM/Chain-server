@@ -26,6 +26,5 @@ public class EmailVerificationToken {
     @Column(nullable = false)
     private Instant expiryDate;
 
-    @Column(nullable = false)
     private boolean verified;
 }
