@@ -63,6 +63,9 @@ public class User {
         this.name = request.userName();
         this.email = request.email();
         this.password = password;
+        this.userGeneration = request.generation();
+        this.userClass = request.userClass();
+        this.userNumber = request.userNumber();
         this.roles.add(Authority.valueOf("USER"));
     }
 
