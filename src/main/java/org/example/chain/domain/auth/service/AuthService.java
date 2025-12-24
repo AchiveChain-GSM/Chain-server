@@ -39,9 +39,4 @@ public class AuthService {
 
         return new TokenRes(accessToken, refreshToken);
     }
-
-    @Transactional
-    public void verifyEmail(String token) {
-        emailService.verifyToken(token);
-    }
 }

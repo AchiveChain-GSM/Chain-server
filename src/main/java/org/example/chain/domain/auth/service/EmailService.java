@@ -1,6 +1,7 @@
 package org.example.chain.domain.auth.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.chain.domain.auth.data.request.VerifyEmailReq;
 import org.example.chain.domain.auth.entity.EmailVerificationToken;
 import org.example.chain.domain.auth.repository.EmailVerificationTokenRepository;
 import org.springframework.mail.SimpleMailMessage;
@@ -37,10 +38,10 @@ public class EmailService {
         }
 
     @Transactional
-    public void verifyToken(String token) {
+    public void verifyToken(VerifyEmailReq request) {
         EmailVerificationToken verificationToken =
-                tokenRepository.findByToken(token)
-                        .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 토큰"));
+                tokenRepository.findByTokenAndEmail(request.token(), request.email())
+                        .orElseThrow(() -> new IllegalArgumentException("해당 이메일과 인증코드의 정보가 일치하지 않습니다."));
 
         if (verificationToken.getExpiryDate().isBefore(Instant.now())) {
             throw new IllegalArgumentException("만료된 토큰");
