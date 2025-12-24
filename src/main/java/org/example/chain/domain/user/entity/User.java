@@ -63,7 +63,7 @@ public class User {
         this.name = request.userName();
         this.email = request.email();
         this.password = password;
-        this.roles.add(Authority.valueOf(request.role()));
+        this.roles.add(Authority.valueOf("USER"));
     }
 
     public void update(UpdateReq request, String password){
