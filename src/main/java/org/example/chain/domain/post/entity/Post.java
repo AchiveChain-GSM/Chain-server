@@ -36,7 +36,7 @@ public class Post {
     private String content;
 
     @CreatedDate
-    @Column(name = "createAt", updatable = false)
+    @Column(name = "create_at", updatable = false)
     private Instant createAt;
 
     @ColumnDefault("0")
