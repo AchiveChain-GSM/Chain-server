@@ -24,11 +24,16 @@ public class PostController {
 
     //게시물 생성 페이지, 바로 조회할 수 있는 URL 반환
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> createPost(@ModelAttribute PostCreateReq request){
+    public ResponseEntity<String> createPost(@ModelAttribute PostCreateReq request){
         log.info("자료 생성");
         Long postId = postService.createPost(request);
         log.info("자료 생성 완료");
-        return ResponseEntity.created(java.net.URI.create("/api/posts/" + postId)).build();
+
+        String url = "/api/posts/" + postId;
+
+        return ResponseEntity
+                .created(java.net.URI.create(url))
+                .body(url);
     }
 
     //게시물 수정 페이지

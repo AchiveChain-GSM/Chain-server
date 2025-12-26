@@ -56,34 +56,42 @@ public class PostService {
                 .build();
 
         //태그 추가
-        List<PostTag> postTags = request.tags().stream()
-                .map(tagService::getOrCreateTag) // TagService의 메서드 호출
-                .map(tag -> {
-                    PostTag postTag = new PostTag(post, tag);
-                    postTagRepository.save(postTag);
-                    return postTag;
-                })
-                .toList();
+        List<PostTag> postTags = new ArrayList<>();
 
-        post.getPostTags().addAll(postTags);
+        if (request.tags() != null) {
+            postTags = request.tags().stream()
+                    .map(tagService::getOrCreateTag)
+                    .map(tag -> {
+                        PostTag postTag = new PostTag(post, tag);
+                        postTagRepository.save(postTag);
+                        return postTag;
+                    })
+                    .toList();
+
+            post.getPostTags().addAll(postTags);
+        }
 
 
         //이미지 추가
         List<Image> images = new ArrayList<>();
-        for(var imageFile : request.images()) {
 
-            String imageKey = s3Service.upload(imageFile, user.getId().toString());
+        if (request.images() != null) {
+            for (var imageFile : request.images()) {
 
-            Image image = Image.builder()
-                    .imageKey(imageKey)
-                    .imageName(imageFile.getOriginalFilename())
-                    .post(post)
-                    .build();
-            imageRepository.save(image);
+                String imageKey = s3Service.upload(imageFile, user.getId().toString());
 
-            images.add(image);
+                Image image = Image.builder()
+                        .imageKey(imageKey)
+                        .imageName(imageFile.getOriginalFilename())
+                        .post(post)
+                        .build();
+                imageRepository.save(image);
+
+                images.add(image);
+            }
+
+            post.getImages().addAll(images);
         }
-        post.getImages().addAll(images);
 
         return postRepository.save(post).getId();
     }
