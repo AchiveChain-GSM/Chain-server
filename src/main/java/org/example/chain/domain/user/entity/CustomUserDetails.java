@@ -10,7 +10,9 @@ public record CustomUserDetails(User user) implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        this.user.getRoles().forEach(R -> authorities.add(() -> R.name()));
+        this.user.getRoles().forEach(R ->
+                authorities.add(() -> "ROLE_" + R.name())
+        );
         return authorities;
     }
 
