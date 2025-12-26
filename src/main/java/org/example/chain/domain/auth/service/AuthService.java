@@ -1,6 +1,7 @@
 package org.example.chain.domain.auth.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.chain.domain.auth.data.request.LoginReq;
 import org.example.chain.domain.auth.data.response.TokenRes;
 import org.example.chain.domain.user.entity.CustomUserDetails;
@@ -11,10 +12,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    private final EmailService emailService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
@@ -37,6 +38,7 @@ public class AuthService {
 
         String refreshToken = jwtProvider.createRefreshToken(user.getEmail());
 
+        log.info("로그인 요청 완료");
         return new TokenRes(accessToken, refreshToken);
     }
 }

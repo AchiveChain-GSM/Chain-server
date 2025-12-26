@@ -11,7 +11,6 @@ import org.example.chain.domain.auth.service.AuthService;
 import org.example.chain.domain.auth.service.EmailService;
 import org.example.chain.domain.user.data.request.SignUpReq;
 import org.example.chain.domain.user.entity.User;
-import org.example.chain.domain.user.repository.UserRepository;
 import org.example.chain.domain.user.service.UserService;
 import org.example.chain.global.security.util.SecurityUtil;
 import org.springframework.http.HttpStatus;
@@ -29,18 +28,20 @@ public class AuthController {
     private final EmailService emailService;
     private final AuthService authService;
     private final UserService userService;
-    private final UserRepository userRepository;
     private final SecurityUtil securityUtil;
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/sign-up")
     public ResponseEntity<Void> signUp(@RequestBody SignUpReq request) {
+        log.info("회원가입 요청 들어옴");
         userService.createUser(request);
+        log.info("회원가입 성공");
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/login")
     public ResponseEntity<TokenRes> login(@RequestBody LoginReq request) {
+        log.info("로그인 요청 들어옴");
         return ResponseEntity.ok(authService.login(request));
     }
 
