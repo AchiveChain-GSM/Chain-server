@@ -55,13 +55,6 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/api/health").permitAll()
 
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/posts/**",
-                                "/api/timeline"
-                        ).permitAll()
-
-                        .requestMatchers(HttpMethod.GET, "/api/posts/search").permitAll()
-
                         .anyRequest().authenticated()
                 )
 

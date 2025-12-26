@@ -32,16 +32,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
 
-        if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        if (
-                uri.startsWith("/api/auth") ||
-                        uri.equals("/api/health") ||
-                        (request.getMethod().equals("GET") && uri.startsWith("/api/posts"))
-        ) {
+        if (uri.startsWith("/api/auth") || uri.equals("/api/health")) {
             filterChain.doFilter(request, response);
             return;
         }
