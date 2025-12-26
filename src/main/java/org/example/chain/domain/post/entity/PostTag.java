@@ -9,14 +9,15 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostTag {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private PostTagId id;
 
+    @MapsId("postId")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
 
+    @MapsId("tagId")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
     private Tag tag;
@@ -24,5 +25,6 @@ public class PostTag {
     public PostTag(Post post, Tag tag) {
         this.post = post;
         this.tag = tag;
+        this.id = new PostTagId(post.getId(), tag.getId());
     }
 }

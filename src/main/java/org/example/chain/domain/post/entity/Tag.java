@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "tag_id")
     private Long id;
 
     @Column(unique = true, nullable = false)
