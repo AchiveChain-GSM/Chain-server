@@ -163,7 +163,10 @@ public class PostService {
 
     //조회 게시물 조회시 사용, 맨 상단에 있는 image url 하나만 조회
     String getFirstImageUrl(Post post) {
-        return s3Service.generateGetUrl(post.getImages().getFirst().getImageKey());
+        return post.getImages().stream()
+                .findFirst() // 첫 번째 요소가 있으면 가져오고 없으면 빈 Optional 반환
+                .map(image -> s3Service.generateGetUrl(image.getImageKey()))
+                .orElse(null); // 이미지가 없으면 null 반환 (또는 기본 이미지 URL)
     }
 
 
