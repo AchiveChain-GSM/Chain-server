@@ -48,9 +48,14 @@ public class JwtProvider {
     }
 
     public String createAccessToken(String username, Collection<? extends GrantedAuthority> roles){
-        Claims claims = Jwts.claims() // jwt 내부 본문에 들어갈거
-                .setSubject(username);
-        claims.put("roles", roles);
+        Claims claims = Jwts.claims().setSubject(username);
+
+        List<String> roleNames = roles.stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        claims.put("roles", roleNames);
+
         return createToken(claims, accessTokenValidity);
     }
 
