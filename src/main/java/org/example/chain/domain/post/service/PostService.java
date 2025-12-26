@@ -1,6 +1,7 @@
 package org.example.chain.domain.post.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.chain.domain.post.data.req.PostReportReq;
 import org.example.chain.domain.post.data.req.PostUpdateReq;
 import org.example.chain.domain.post.entity.PostBookmark;
@@ -25,6 +26,7 @@ import java.util.*;
 import java.time.Instant;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -171,6 +173,7 @@ public class PostService {
         // [Step 1] 조건에 맞는 ID들만 페이징해서 가져옴 (매우 빠름)
         Page<Long> postIdPage = postRepository.findIdsByIntegratedSearch(keyword, pageable);
 
+        log.info("검색 완료");
         return convertToDtoPage(postIdPage, pageable);
     }
 
@@ -221,6 +224,7 @@ public class PostService {
         postRepository.updateViews(postId);
 
         //반홥
+        log.info("자료 상세 조회 완료");
         return PostDetailReadRes.from(post, getImageUrls(post));
     }
 
