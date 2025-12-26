@@ -11,25 +11,30 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 import static java.lang.System.getenv;
+import static java.lang.System.setProperty;
 
 @Component
 @Slf4j
 public class JwtProvider {
 
-    private String secretKey; // 환경변수에서 key 값 가져오기
-
+    private final String secretKey;
     private final Long accessTokenValidity;
     private final Long refreshTokenValidity;
 
     public JwtProvider(
             @Value("${jwt.access-token-expiration-minutes}") Long accessTokenExpirationMinutes,
-            @Value("${jwt.refresh-token-expiration-days}") Long refreshTokenExpirationDays) {
+            @Value("${jwt.refresh-token-expiration-days}") Long refreshTokenExpirationDays,
+            @Value("${KEY}") String secretKey)
+    {
         this.accessTokenValidity = accessTokenExpirationMinutes * 60 * 1000L;
         this.refreshTokenValidity = refreshTokenExpirationDays * 24 * 60 * 60 * 1000L;
-        this.secretKey = getenv().get("KEY");
+        this.secretKey = secretKey;
+
         if (secretKey == null || secretKey.isBlank()) {
             throw new IllegalStateException("JWT 시크릿 키가 존재하지 않습니다.");
         }
+
+        log.info("JWT KEY length = {}", secretKey.length());
     }
 
 
