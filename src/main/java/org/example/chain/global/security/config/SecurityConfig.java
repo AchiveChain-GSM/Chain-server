@@ -57,7 +57,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET,
                                 "/api/posts/**",
-                                "/api/timeline/**"
+                                "/api/timeline"
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/posts/search").permitAll()
