@@ -36,9 +36,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         SELECT DISTINCT p
         FROM Post p
         LEFT JOIN FETCH p.images
-        LEFT JOIN FETCH p.tags pt
+        LEFT JOIN FETCH p.postTags pt
         LEFT JOIN FETCH pt.tag
-        LEFT JOIN FETCH p.author
+        LEFT JOIN FETCH p.user
         WHERE p.id = :postId
     """)
     Optional<Post> findByIdWithDetails(@Param("postId") Long postId);
