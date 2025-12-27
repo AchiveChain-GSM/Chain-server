@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
+import org.example.chain.domain.user.entity.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -52,14 +53,16 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String createAccessToken(String username, Collection<? extends GrantedAuthority> roles){
-        Claims claims = Jwts.claims().setSubject(username);
+    public String createAccessToken(User user, Collection<? extends GrantedAuthority> roles){
+        Claims claims = Jwts.claims().setSubject(user.getEmail());
 
         List<String> roleNames = roles.stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
         claims.put("roles", roleNames);
+        claims.put("userId", user.getId());
+        claims.put("email", user.getEmail());
 
         return createToken(claims, accessTokenValidity);
     }

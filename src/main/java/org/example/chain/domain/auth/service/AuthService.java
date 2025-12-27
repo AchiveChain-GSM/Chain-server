@@ -32,7 +32,7 @@ public class AuthService {
         CustomUserDetails userDetails = new CustomUserDetails(user);
 
         String accessToken = jwtProvider.createAccessToken(
-                user.getEmail(),
+                user,
                 userDetails.getAuthorities()
         );
 
