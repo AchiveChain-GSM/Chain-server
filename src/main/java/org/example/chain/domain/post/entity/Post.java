@@ -72,11 +72,10 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PostView> postViews = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @JoinColumn(name = "post_id")
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostReport>  postReports = new ArrayList<>();
 
     public void updatePost(PostUpdateReq postUpdateReq) {
@@ -84,5 +83,21 @@ public class Post {
         this.content = postUpdateReq.content();
     }
 
+    public void addImage(Image image){
+        this.images.add(image);
+        if (image.getPost() != this){
+            image.setPost(this);
+        }
+    }
 
+    public void updateTags(List<PostTag> newPostTags) {
+        this.postTags.clear();
+        this.postTags.addAll(newPostTags);
+    }
+
+    // 특정 이미지만 삭제하는 메서드
+    public void removeImage(Image image) {
+        this.images.remove(image);
+        image.setPost(null);
+    }
 }

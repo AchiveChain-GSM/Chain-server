@@ -11,7 +11,6 @@ import org.example.chain.domain.post.entity.*;
 import org.example.chain.domain.post.data.res.*;
 import org.example.chain.domain.post.repository.*;
 import org.example.chain.domain.user.entity.User;
-import org.example.chain.domain.user.repository.UserRepository;
 import org.example.chain.global.error.exception.PostNotFoundException;
 import org.example.chain.global.s3.S3Service;
 import org.example.chain.global.security.util.SecurityUtil;
@@ -20,6 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.util.*;
@@ -53,95 +53,57 @@ public class PostService {
                 .title(request.title())
                 .content(request.content())
                 .user(user)
+                .images(new ArrayList<>())
+                .postTags(new ArrayList<>())
                 .build();
 
-        //태그 추가
-        List<PostTag> postTags = new ArrayList<>();
+        Post savedPost = postRepository.save(post);
 
-        if (request.tags() != null) {
-            postTags = request.tags().stream()
-                    .map(tagService::getOrCreateTag)
-                    .map(tag -> {
-                        PostTag postTag = new PostTag(post, tag);
-                        postTagRepository.save(postTag);
-                        return postTag;
-                    })
-                    .toList();
-
-            post.getPostTags().addAll(postTags);
+        if (request.tags() != null && !request.tags().isEmpty()) {
+            processTags(savedPost, request.tags());
         }
 
-
-        //이미지 추가
-        List<Image> images = new ArrayList<>();
-
-        if (request.images() != null) {
-            for (var imageFile : request.images()) {
-
-                String imageKey = s3Service.upload(imageFile, user.getId().toString());
-
-                Image image = Image.builder()
-                        .imageKey(imageKey)
-                        .imageName(imageFile.getOriginalFilename())
-                        .post(post)
-                        .build();
-                imageRepository.save(image);
-
-                images.add(image);
-            }
-
-            post.getImages().addAll(images);
+        // 3. 이미지 S3 업로드 및 저장
+        if (request.images() != null && !request.images().isEmpty()) {
+            uploadImages(savedPost, request.images());
         }
 
-        return postRepository.save(post).getId();
+        return savedPost.getId();
     }
 
 
 
     @Transactional
-    public void updatePost(PostUpdateReq postUpdateReq) {
-        User user = securityUtil.getCurrentUser();
-
-        //새로고침 할 게시물 조회
-        Post post = postRepository.findById(postUpdateReq.post_id())
+    public void updatePost(PostUpdateReq req) {
+        // 1. 대상 게시물 조회
+        Post post = postRepository.findById(req.post_id())
                 .orElseThrow(() -> new PostNotFoundException("수정할 게시글을 찾을 수 없습니다."));
 
-        //제목, 내용 수정
-        post.updatePost(postUpdateReq);
+        // 2. 제목, 내용 수정
+        post.updatePost(req);
 
-        //태그 수정
-        if (postUpdateReq.tags() != null) {
-            post.getPostTags().clear();
-            for (String tagName : postUpdateReq.tags()) {
-                Tag tag = tagRepository.findByName(tagName).orElseGet(() -> {
-                    Tag t = new Tag(tagName);
-                    return tagRepository.save(t);
-                });
-                PostTag postTag = new PostTag(post, tag);
-                postTagRepository.save(postTag);
-                post.getPostTags().add(postTag);
+        // 3. 태그 수정 (기존 관계 제거 후 새 관계 설정)
+        if (req.tags() != null) {
+            processTags(post, req.tags());
+        }
+
+        // 4. 선택적 이미지 삭제 로직
+        if (req.removeImageIds() != null && !req.removeImageIds().isEmpty()) {
+            List<Image> currentImages = new ArrayList<>(post.getImages());
+            for (Image img : currentImages) {
+                if (req.removeImageIds().contains(img.getImage_id())) {
+                    s3Service.delete(img.getImageKey()); // S3에서 파일 삭제
+                    post.removeImage(img);               // Post 엔티티 연관관계 제거
+                }
             }
         }
 
-        //이미지 삭제
-        removeImagesInPost(post, post.getImages());
-
-        //이미지 추가
-        if (postUpdateReq.images() != null && !postUpdateReq.images().isEmpty()) {
-            for (var imageFile : postUpdateReq.images()) {
-                if (imageFile.isEmpty()) continue; // 실제 파일이 있는지 확인
-
-                String imageKey = s3Service.upload(imageFile, user.getId().toString());
-                Image image = Image.builder()
-                        .imageKey(imageKey)
-                        .imageName(imageFile.getOriginalFilename())
-                        .post(post) // 연관 관계 설정
-                        .build();
-
-                imageRepository.save(image);
-                post.getImages().add(image); // 객체 상태 동기화
-            }
+        // 5. 신규 이미지 추가
+        if (req.newImages() != null && !req.newImages().isEmpty()) {
+            uploadImages(post, req.newImages());
         }
+
+        // @Transactional에 의해 메서드 종료 시 영속성 컨텍스트의 변경 내용이 DB에 반영(Flush)됩니다.
     }
 
 
@@ -160,8 +122,8 @@ public class PostService {
     void removeImagesInPost(Post post, List<Image> removeImages) {
         for(var removeImage : removeImages) {
             s3Service.delete(removeImage.getImageKey());
-            post.getImages().remove(removeImage);
         }
+        post.getImages().clear();
     }
 
     //상세 게시물 조회시 사용, 게시물 안에 있는 image url 모두 불러오기
@@ -475,5 +437,42 @@ public class PostService {
         deletePost(post.getId());
     }
 
+    private void processTags(Post post, List<String> tagNames) {
+        // 1. 입력받은 태그 이름들로 기존 DB에 존재하는 태그들 한 번에 조회
+        List<Tag> existingTags = tagRepository.findAllByNameIn(tagNames);
+        Map<String, Tag> tagMap = existingTags.stream()
+                .collect(Collectors.toMap(Tag::getName, t -> t));
+
+        // 2. PostTag 생성
+        List<PostTag> postTags = tagNames.stream().map(name -> {
+            Tag tag = tagMap.get(name);
+            if (tag == null) {
+                // DB에 없으면 새로 생성 후 저장
+                tag = tagRepository.save(new Tag(name));
+            }
+            return new PostTag(post, tag);
+        }).toList();
+
+        // 3. Post 엔티티의 태그 리스트 교체
+        post.getPostTags().clear();
+        post.getPostTags().addAll(postTags);
+    }
+
+    /**
+     * 이미지 업로드 로직
+     */
+    private void uploadImages(Post post, List<MultipartFile> files) {
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) continue;
+
+            String imageKey = s3Service.upload(file, "posts");
+            Image image = Image.builder()
+                    .imageKey(imageKey)
+                    .imageName(file.getOriginalFilename())
+                    .build();
+
+            post.addImage(image); // 연관관계 편의 메서드 호출
+        }
+    }
 
 }
