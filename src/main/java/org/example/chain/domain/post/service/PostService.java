@@ -196,7 +196,25 @@ public class PostService {
         //조회수 증가
         postRepository.updateViews(postId);
 
-        User user = securityUtil.getCurrentUser();
+        User user = null;
+        try {
+            user = securityUtil.getCurrentUser();
+        } catch (Exception e) {
+            // X
+        }
+
+        if (user != null) {
+            try {
+                PostView view = PostView.builder()
+                        .post(post)
+                        .user(user)
+                        .build();
+                postViewRepository.save(view);
+            } catch (Exception e) {
+                log.error("최근 본 자료 저장 실패", e);
+            }
+        }
+
         boolean isLiked = false;
         boolean isBookmarked = false;
 

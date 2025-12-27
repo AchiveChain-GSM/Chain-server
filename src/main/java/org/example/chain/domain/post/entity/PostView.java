@@ -2,6 +2,7 @@ package org.example.chain.domain.post.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.chain.domain.user.entity.User;
@@ -32,4 +33,9 @@ public class PostView {
     @JoinColumn(name = "user_id",  nullable = true)
     private User user;
 
+    @Builder
+    public PostView(User user, Post post){
+        this.user = user;
+        this.post = post;
+    }
 }
