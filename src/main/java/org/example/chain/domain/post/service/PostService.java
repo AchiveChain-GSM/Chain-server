@@ -323,11 +323,11 @@ public class PostService {
 
         if (postLikeOptional.isPresent()) {
             postLikeRepository.delete(postLikeOptional.get());
-            postLikeRepository.addLikes(postId);
+            postLikeRepository.minusLikes(postId);
         } else {
             PostLike newLike = new PostLike(post, user);
             postLikeRepository.save(newLike);
-            postLikeRepository.minusLikes(postId);
+            postLikeRepository.addLikes(postId);
         }
     }
 
