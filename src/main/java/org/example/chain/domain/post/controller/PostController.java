@@ -14,6 +14,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -24,8 +27,14 @@ public class PostController {
 
     //게시물 생성 페이지, 바로 조회할 수 있는 URL 반환
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> createPost(@ModelAttribute PostCreateReq request){
+    public ResponseEntity<String> createPost(
+            @RequestPart("title") String title,
+            @RequestPart("content") String content,
+            @RequestPart(value = "tags", required = false) List<String> tags,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ){
         log.info("자료 생성");
+        PostCreateReq request = new PostCreateReq(title, content, tags, images);
         Long postId = postService.createPost(request);
         log.info("자료 생성 완료");
 
