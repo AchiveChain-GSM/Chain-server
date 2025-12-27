@@ -11,6 +11,7 @@ import java.util.Map;
 public record PostDetailReadRes(
         Long id,
         String title,
+        Long authorId,
         String author,
         Instant createAt,
         String content,
@@ -25,6 +26,7 @@ public record PostDetailReadRes(
         return new PostDetailReadRes(
                 post.getId(),
                 post.getTitle(),
+                post.getUser().getId(),
                 post.getUser().getName(),
                 post.getCreateAt(),
                 post.getContent(),
