@@ -43,8 +43,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     """)
     Optional<Post> findByIdWithDetails(@Param("postId") Long postId);
 
-    @Query(value = "SELECT p FROM Post p JOIN p.user ORDER BY FUNCTION('DATE', p.createAt) DESC , p.likes DESC",
-            countQuery = "SELECT count(p) FROM Post p")
+    @Query(value = "SELECT p FROM Post p JOIN FETCH p.user ORDER BY p.createAt DESC, p.likes DESC")
     Page<Post> findPopularPosts(Pageable pageable);
 
     @Query("SELECT p FROM Post p WHERE p.user.id = :user_id")

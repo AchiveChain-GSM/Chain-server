@@ -48,6 +48,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/api/auth/sign-up").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/send-email").permitAll()

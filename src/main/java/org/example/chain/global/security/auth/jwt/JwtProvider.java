@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-import static java.lang.System.getenv;
-import static java.lang.System.setProperty;
 
 @Component
 @Slf4j
