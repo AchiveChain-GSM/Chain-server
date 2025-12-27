@@ -20,9 +20,11 @@ public record PostDetailReadRes(
         Long likes,
         Long bookmarks,
         Long views,
-        List<PostCommentReadRes> comments)
+        List<PostCommentReadRes> comments,
+        boolean isLiked,
+        boolean isBookmarked)
 {
-    public static PostDetailReadRes from (Post post, Map<Long, String> images) {
+    public static PostDetailReadRes from (Post post, Map<Long, String> images, boolean isLiked, boolean isBookmarked) {
         return new PostDetailReadRes(
                 post.getId(),
                 post.getTitle(),
@@ -38,6 +40,9 @@ public record PostDetailReadRes(
                 post.getPostComments().stream()
                         .map(postComment -> {
                             return PostCommentReadRes.from(postComment);
-                        }).toList());
+                        }).toList(),
+                isLiked,
+                isBookmarked
+        );
     }
 }

@@ -196,9 +196,21 @@ public class PostService {
         //조회수 증가
         postRepository.updateViews(postId);
 
-        //반홥
+        User user = securityUtil.getCurrentUser();
+        boolean isLiked = false;
+        boolean isBookmarked = false;
+
+        if (user != null) {
+            // 기존에 만들어둔 헬퍼 메서드 활용
+            Set<Long> likedIds = likedPostIds(user.getId());
+            Set<Long> bookmarkedIds = bookmarkedPostIds(user.getId());
+
+            isLiked = isLiked(postId, likedIds);
+            isBookmarked = isBookmarked(postId, bookmarkedIds);
+        }
+
         log.info("자료 상세 조회 완료");
-        return PostDetailReadRes.from(post, getImageUrls(post));
+        return PostDetailReadRes.from(post, getImageUrls(post), isLiked, isBookmarked);
     }
 
     //해당 유저가, 읽은 게시물 조회
