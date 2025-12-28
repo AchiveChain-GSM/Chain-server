@@ -12,19 +12,19 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/posts/{postId}/comments")
+@RequestMapping("/api/posts")
 @RequiredArgsConstructor
 public class PostCommentController {
     private final PostCommentService commentService;
 
     //게시물에, 댓글 생성 페이지
-    @PostMapping
+    @PostMapping("/{postId}/comments")
     public ResponseEntity<String> createComment(
             @PathVariable Long postId,
             @RequestBody PostCommentCreateReq request) {
         log.info("댓글 작성");
 
-        String url = "/api/posts/" + postId + "comments";
+        String url = "/api/posts/" + postId + "/comments";
 
         commentService.createComment(postId, request);
         log.info("댓글 작성 완료");
@@ -33,11 +33,13 @@ public class PostCommentController {
                 .body(url);
     }
 
-    @GetMapping
+    @GetMapping("/{postId}/comments")
     public ResponseEntity<List<PostCommentReadRes>> readComments(
             @PathVariable Long postId
     ) {
+        log.info("댓글 읽기");
         List<PostCommentReadRes> comments = commentService.readComments(postId);
+        log.info("댓글 읽기 완료");
         return ResponseEntity.ok(comments);
     }
 }
