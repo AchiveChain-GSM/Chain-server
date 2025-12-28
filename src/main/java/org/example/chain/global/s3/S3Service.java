@@ -59,7 +59,15 @@ public class S3Service {
         } catch (IOException e) {
             throw new PostImageUploadFailedException("파일 삭제 실패");
         } catch (S3Exception e) {
-            throw new PostImageUploadFailedException("S3 업로드 실패");
+            // AWS가 준 실제 원인 로그로 남기기
+            String code = e.awsErrorDetails() != null ? e.awsErrorDetails().errorCode() : "NO_CODE";
+            String msg  = e.awsErrorDetails() != null ? e.awsErrorDetails().errorMessage() : e.getMessage();
+            int status  = e.statusCode();
+
+            System.out.println("[S3 PUT FAIL] status=" + status + " code=" + code + " msg=" + msg
+                    + " requestId=" + e.requestId());
+
+            throw new PostImageUploadFailedException("S3 업로드 실패: " + code + " (" + status + ")");
         }
     }
 
