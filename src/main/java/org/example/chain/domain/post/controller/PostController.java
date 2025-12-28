@@ -28,15 +28,15 @@ public class PostController {
     //게시물 생성 페이지, 바로 조회할 수 있는 URL 반환
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> createPost(
-            @RequestPart("title") String title,
-            @RequestPart("content") String content,
-            @RequestPart(value = "tags", required = false) List<String> tags,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam(value = "tags", required = false) List<String> tags,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images
     ){
-        log.info("자료 생성");
+        log.info("자료 생성 시작 - 제목: {}", title);
         PostCreateReq request = new PostCreateReq(title, content, tags, images);
         Long postId = postService.createPost(request);
-        log.info("자료 생성 완료");
+        log.info("자료 생성 완료 - ID: {}", postId);
 
         String url = "/api/posts/" + postId;
 
