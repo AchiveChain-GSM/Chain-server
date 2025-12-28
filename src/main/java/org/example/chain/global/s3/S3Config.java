@@ -38,7 +38,11 @@ public class S3Config {
                 .credentialsProvider(
                         StaticCredentialsProvider.create(credentials)
                 )
-//                .serviceConfiguration(s3Configuration -> s3Configuration.pathStyleAccessEnabled(true))
+                .serviceConfiguration(s3Configuration ->
+                        s3Configuration
+                                .pathStyleAccessEnabled(true) // 점(.)이 있는 버킷은 이게 필수입니다
+                                .checksumValidationEnabled(false) // 서명 불일치 시 체크섬 검증을 잠시 꺼봅니다
+                )
                 .build();
     }
 
