@@ -1,24 +1,21 @@
 package org.example.chain.domain.post.data.res;
 
-import org.example.chain.domain.post.entity.Post;
 import org.example.chain.domain.post.entity.PostComment;
 
 import java.time.Instant;
 
 public record PostCommentReadRes(
-        Long commentId,
-        Long userId,
-        String userName,
+        Long id,
         String content,
+        String writer,
         Instant createAt
 ) {
-    public static PostCommentReadRes from(PostComment comment) {
+    public static PostCommentReadRes from(PostComment c) {
         return new PostCommentReadRes(
-                comment.getId(),
-                comment.getUser().getId(),
-                comment.getUser().getName(),
-                comment.getContent(),
-                comment.getCreateAt()
+                c.getId(),
+                c.getContent(),
+                c.getUser().getName(),
+                c.getCreateAt()
         );
     }
 }

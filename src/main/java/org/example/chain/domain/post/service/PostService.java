@@ -38,6 +38,7 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final PostReportRepository postReportRepository;
     private final ImageRepository imageRepository;
+    private final PostCommentRepository postCommentRepository;
     private final TagRepository tagRepository;
     private final S3Service s3Service;
     private final PostBookmarkRepository bookmarkRepository;
@@ -195,6 +196,11 @@ public class PostService {
         Post post = postRepository.findByIdWithDetails(postId)
                 .orElseThrow(() -> new PostNotFoundException("해당 자료를 찾을 수 없습니댜."));
 
+        List<PostComment> comments =
+                postCommentRepository.findByPostId(postId);
+
+        Map<Long, String> images = getImageUrls(post);
+
         //조회수 증가
         postRepository.updateViews(postId);
         entityManager.clear();
@@ -234,7 +240,7 @@ public class PostService {
         }
 
         log.info("자료 상세 조회 완료");
-        return PostDetailReadRes.from(post, getImageUrls(post), isLiked, isBookmarked, likes, bookmarks);
+        return PostDetailReadRes.from(post, comments, images, isLiked, isBookmarked, likes, bookmarks);
     }
 
     //해당 유저가, 읽은 게시물 조회

@@ -17,4 +17,12 @@ public interface PostCommentRepository extends JpaRepository<PostComment, Long> 
         ORDER BY c.createAt DESC
     """)
     List<PostComment> findAllByPostId(@Param("postId") Long postId);
+
+    @Query("""
+    SELECT c
+    FROM PostComment c
+    WHERE c.post.id = :postId
+    ORDER BY c.createAt ASC
+""")
+    List<PostComment> findByPostId(Long postId);
 }

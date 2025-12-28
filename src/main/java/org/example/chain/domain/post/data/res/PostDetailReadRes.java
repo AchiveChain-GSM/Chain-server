@@ -2,6 +2,7 @@ package org.example.chain.domain.post.data.res;
 
 import lombok.Builder;
 import org.example.chain.domain.post.entity.Post;
+import org.example.chain.domain.post.entity.PostComment;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,27 +23,42 @@ public record PostDetailReadRes(
         Long views,
         List<PostCommentReadRes> comments,
         boolean isLiked,
-        boolean isBookmarked)
-{
-    public static PostDetailReadRes from (Post post, Map<Long, String> images, boolean isLiked, boolean isBookmarked, long likes, long bookmarks) {
-        return new PostDetailReadRes(
-                post.getId(),
-                post.getTitle(),
-                post.getUser().getId(),
-                post.getUser().getName(),
-                post.getCreateAt(),
-                post.getContent(),
-                post.getPostTags().stream().map(postTag -> postTag.getTag().getName()).toList(),
-                images,
-                likes,
-                bookmarks,
-                post.getViews(),
-                post.getPostComments().stream()
-                        .map(postComment -> {
-                            return PostCommentReadRes.from(postComment);
-                        }).toList(),
-                isLiked,
-                isBookmarked
-        );
+        boolean isBookmarked
+) {
+
+    public static PostDetailReadRes from(
+            Post post,
+            List<PostComment> comments,      // 🔥 댓글은 외부에서 주입
+            Map<Long, String> images,
+            boolean isLiked,
+            boolean isBookmarked,
+            long likes,
+            long bookmarks
+    ) {
+        return PostDetailReadRes.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .authorId(post.getUser().getId())
+                .author(post.getUser().getName())
+                .createAt(post.getCreateAt())
+                .content(post.getContent())
+                .tags(
+                        post.getPostTags()
+                                .stream()
+                                .map(pt -> pt.getTag().getName())
+                                .toList()
+                )
+                .images(images)
+                .likes(likes)
+                .bookmarks(bookmarks)
+                .views(post.getViews())
+                .comments(
+                        comments.stream()
+                                .map(PostCommentReadRes::from)
+                                .toList()
+                )
+                .isLiked(isLiked)
+                .isBookmarked(isBookmarked)
+                .build();
     }
 }
