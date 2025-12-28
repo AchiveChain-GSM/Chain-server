@@ -1,10 +1,7 @@
 package org.example.chain.domain.post.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.chain.domain.post.data.req.PostUpdateReq;
 import org.example.chain.domain.user.entity.User;
 import org.hibernate.annotations.BatchSize;
@@ -22,6 +19,7 @@ import java.util.Set;
 @Table(name = "post")
 @Builder
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)

@@ -30,4 +30,7 @@ public interface PostBookmarkRepository extends JpaRepository<PostBookmark, Long
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Post p SET p.bookmarks = p.bookmarks - 1 WHERE p.id = :postId")
     void minusBookmark(@Param("postId") Long postId);
+
+    @Query("SELECT COUNT(pl) FROM PostBookmark pl WHERE pl.post = :post")
+    long countByPost(@Param("post") Post post);
 }

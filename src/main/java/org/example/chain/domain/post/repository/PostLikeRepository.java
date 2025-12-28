@@ -22,8 +22,8 @@ public interface PostLikeRepository extends JpaRepository<PostLike,Long> {
 
     Optional<PostLike> findByPostIdAndUserId(Long postId, Long userId);
 
-    @Query("SELECT COUNT(pl) FROM PostLike pl WHERE pl.post.id = :postId")
-    long countByPostId(@Param("postId") Long postId);
+    @Query("SELECT COUNT(pl) FROM PostLike pl WHERE pl.post = :post")
+    long countByPost(@Param("post") Post post);
 
     @Query("SELECT DISTINCT pl.post.id FROM PostLike pl WHERE pl.user.id = :user_id")
     Set<Long> findLikedPostIds(@Param(value = "user_id") Long userId);
@@ -35,5 +35,6 @@ public interface PostLikeRepository extends JpaRepository<PostLike,Long> {
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Post p SET p.likes = p.likes - 1 WHERE p.id = :postId AND p.likes > 0")
     void minusLikes(@Param("postId") Long postId);
+
 
 }

@@ -196,6 +196,12 @@ public class PostService {
         //조회수 증가
         postRepository.updateViews(postId);
 
+        long likes = postLikeRepository.countByPost(post);
+        long bookmarks = postBookmarkRepository.countByPost(post);
+
+        post.setLikes(likes);
+        post.setBookmarks(bookmarks);
+
         User user = null;
         try {
             user = securityUtil.getCurrentUser();
