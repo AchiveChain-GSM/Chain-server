@@ -1,5 +1,6 @@
 package org.example.chain.domain.post.service;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.chain.domain.post.data.req.PostReportReq;
@@ -42,6 +43,7 @@ public class PostService {
     private final PostBookmarkRepository bookmarkRepository;
     private final PostTagRepository postTagRepository;
     private final PostBookmarkRepository postBookmarkRepository;
+    private final EntityManager entityManager;
 
     //게시물 생성
     @Transactional
@@ -195,12 +197,10 @@ public class PostService {
 
         //조회수 증가
         postRepository.updateViews(postId);
+        entityManager.clear();
 
         long likes = postLikeRepository.countByPost(post);
         long bookmarks = postBookmarkRepository.countByPost(post);
-
-        post.setLikes(likes);
-        post.setBookmarks(bookmarks);
 
         User user = null;
         try {
@@ -234,7 +234,7 @@ public class PostService {
         }
 
         log.info("자료 상세 조회 완료");
-        return PostDetailReadRes.from(post, getImageUrls(post), isLiked, isBookmarked);
+        return PostDetailReadRes.from(post, getImageUrls(post), isLiked, isBookmarked, likes, bookmarks);
     }
 
     //해당 유저가, 읽은 게시물 조회
