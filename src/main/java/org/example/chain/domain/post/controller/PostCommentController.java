@@ -27,12 +27,9 @@ public class PostCommentController {
             @RequestBody PostCommentCreateReq request) {
         log.info("댓글 작성");
 
-        Long userId = securityUtil.getCurrentUser().getId();
-
-
         String url = "/api/posts/" + postId + "/comments";
 
-        commentService.createComment(postId, userId, request);
+        commentService.createComment(postId, request);
         log.info("댓글 작성 완료");
         return ResponseEntity
                 .created(java.net.URI.create(url))

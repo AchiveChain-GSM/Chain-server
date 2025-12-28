@@ -16,7 +16,7 @@ public record PostCommentReadRes(
         return new PostCommentReadRes(
                 c.getId(),
                 c.getUser().getName(),
-                c.getUserId(),
+                c.getUser().getId(),
                 c.getContent(),
                 c.getUser().getName(),
                 c.getCreateAt()
