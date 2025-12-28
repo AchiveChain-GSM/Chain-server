@@ -25,7 +25,7 @@ public class PostCommentService {
 
     //해당 게시물에 댓글 생성
     @Transactional
-    public void createComment(Long postId, PostCommentCreateReq request) {
+    public void createComment(Long postId, Long userId, PostCommentCreateReq request) {
 
         //게시물 조회
         Post post = postRepository.findById(postId)

@@ -24,6 +24,9 @@ public class PostComment {
     @Column(name = "content")
     private String content;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     @CreatedDate
     @Column(name = "createAt", updatable = false)
     private Instant createAt;
@@ -37,9 +40,10 @@ public class PostComment {
     private User user;
 
     @Builder
-    public PostComment(Post post, User user, String content) {
+    public PostComment(Post post, User user, String content, Long userId) {
         this.post = post;
         this.user = user;
         this.content = content;
+        this.userId = userId;
     }
 }
