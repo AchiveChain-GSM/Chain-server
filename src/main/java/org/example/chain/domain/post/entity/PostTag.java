@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -26,5 +28,18 @@ public class PostTag {
         this.post = post;
         this.tag = tag;
         this.id = new PostTagId(post.getId(), tag.getId());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PostTag)) return false;
+        PostTag that = (PostTag) o;
+        return Objects.equals(tag.getId(), that.tag.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(tag.getId());
     }
 }
