@@ -50,7 +50,7 @@ aws:
     access-key: '${AWS_ACCESS_KEY}'
     secret-key: '${AWS_SECRET_KEY}'
     region: ap-northeast-2
-    bucket: ideafestival-archive.chain
+    bucket: ideafestival-archive-chain
     url-prefix: https://ideafestival-archive.chain.s3.ap-northeast-2.amazonaws.com
 
 KEY: ${KEY}
