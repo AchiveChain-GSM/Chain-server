@@ -6,6 +6,7 @@ import java.time.Instant;
 
 public record PostCommentReadRes(
         Long id,
+        String author,
         String content,
         String writer,
         Instant createAt
@@ -13,6 +14,7 @@ public record PostCommentReadRes(
     public static PostCommentReadRes from(PostComment c) {
         return new PostCommentReadRes(
                 c.getId(),
+                c.getUser().getName(),
                 c.getContent(),
                 c.getUser().getName(),
                 c.getCreateAt()

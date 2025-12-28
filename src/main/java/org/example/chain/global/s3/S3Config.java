@@ -23,18 +23,22 @@ public class S3Config {
 
     @Bean
     public S3Client s3Client() {
-        // 🚩 값이 실제로 주입되었는지 확인 (서버 실행 시 콘솔 확인)
-        System.out.println("DEBUG S3 AccessKey: " + (accessKey != null ? accessKey.substring(0, 4) : "NULL"));
-        System.out.println("DEBUG S3 SecretKey length: " + (secretKey != null ? secretKey.length() : "NULL"));
 
-        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
+        String cleanAccessKey = accessKey.trim();
+        String cleanSecretKey = secretKey.trim();
+        String cleanRegion = region.trim();
+
+        System.out.println("DEBUG S3 - Region: [" + cleanRegion + "]");
+        System.out.println("DEBUG S3 - AccessKey: [" + cleanAccessKey.substring(0, 4) + "...]");
+
+        AwsBasicCredentials credentials = AwsBasicCredentials.create(cleanAccessKey, cleanSecretKey);
 
         return S3Client.builder()
-                .region(Region.of(region))
+                .region(Region.of(cleanRegion))
                 .credentialsProvider(
                         StaticCredentialsProvider.create(credentials)
                 )
-                .serviceConfiguration(s3Configuration -> s3Configuration.pathStyleAccessEnabled(true))
+//                .serviceConfiguration(s3Configuration -> s3Configuration.pathStyleAccessEnabled(true))
                 .build();
     }
 
