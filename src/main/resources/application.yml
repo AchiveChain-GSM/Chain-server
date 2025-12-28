@@ -52,3 +52,5 @@ aws:
     region: ap-northeast-2
     bucket: ideafestival-archive.chain
     url-prefix: https://ideafestival-archive.chain.s3.ap-northeast-2.amazonaws.com
+
+KEY: ${KEY}
