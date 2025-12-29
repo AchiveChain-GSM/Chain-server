@@ -27,6 +27,8 @@ public interface PostLikeRepository extends JpaRepository<PostLike,Long> {
 
     @Query("SELECT DISTINCT pl.post.id FROM PostLike pl WHERE pl.user.id = :user_id")
     Set<Long> findLikedPostIds(@Param(value = "user_id") Long userId);
+    @Query("SELECT DISTINCT pl.post.id FROM PostLike pl WHERE pl.user.id = :user_id and pl.post.id = :post_id")
+    Set<Long> findLikedPostIds(@Param(value = "user_id") Long userId, @Param(value = "post_id") Long postId);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Post p SET p.likes = p.likes + 1 WHERE p.id = :postId")

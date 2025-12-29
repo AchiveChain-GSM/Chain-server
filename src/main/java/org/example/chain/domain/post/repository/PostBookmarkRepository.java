@@ -22,6 +22,8 @@ public interface PostBookmarkRepository extends JpaRepository<PostBookmark, Long
 
     @Query("SELECT pb.post.id FROM PostBookmark pb WHERE pb.user.id = :userId")
     Set<Long> findBookmarkedPostIds(@Param("userId") Long userId);
+    @Query("SELECT pb.post.id FROM PostBookmark pb WHERE pb.user.id = :userId and pb.post.id = :postId")
+    Set<Long> findBookmarkedPostIds(@Param("userId") Long userId, @Param("postId") Long postId);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Post p SET p.bookmarks = p.bookmarks + 1 WHERE p.id = :postId")

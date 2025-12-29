@@ -219,15 +219,12 @@ public class PostService {
             }
         }
 
-        boolean isLiked = false;
-        boolean isBookmarked = false;
-
         // 기존에 만들어둔 헬퍼 메서드 활용
-        Set<Long> likedIds = likedPostIds(user.getId());
-        Set<Long> bookmarkedIds = bookmarkedPostIds(user.getId());
+        Set<Long> likedIds = postLikeRepository.findLikedPostIds(user.getId(), post.getId());
+        Set<Long> bookmarkedIds = bookmarkRepository.findBookmarkedPostIds(user.getId(), post.getId());
 
-        isLiked = isLiked(postId, likedIds);
-        isBookmarked = isBookmarked(postId, bookmarkedIds);
+        boolean isLiked = isLiked(postId, likedIds);
+        boolean isBookmarked = isBookmarked(postId, bookmarkedIds);
 
         log.info("자료 상세 조회 완료");
         return PostDetailReadRes.from(post, comments, images, isLiked, isBookmarked, likes, bookmarks);
@@ -348,37 +345,46 @@ public class PostService {
     @Transactional
     public void toggleLike(Long postId) {
         User user = securityUtil.getCurrentUser();
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("좋아요할, 해당 게시글 없음"));
 
-        Optional<PostLike> postLikeOptional = postLikeRepository.findByPostIdAndUserId(postId, user.getId());
-
-        if (postLikeOptional.isPresent()) {
-            postLikeRepository.delete(postLikeOptional.get());
-            postLikeRepository.minusLikes(postId);
-        } else {
-            PostLike newLike = new PostLike(post, user);
-            postLikeRepository.save(newLike);
-            postLikeRepository.addLikes(postId);
-        }
+        postLikeRepository.findByPostIdAndUserId(postId, user.getId())
+                .ifPresentOrElse(
+                        like -> {
+                            postLikeRepository.delete(like);
+                            post.getPostLikes().remove(like);
+                            post.setBookmarks(Math.max(0, post.getLikes() - 1));
+                        },
+                        () -> {
+                            PostLike newLike = new PostLike(post, user);
+                            postLikeRepository.save(newLike);
+                            post.getPostLikes().add(newLike);
+                            post.setLikes(post.getLikes() + 1);
+                        }
+                );
     }
 
     //유저가 게시물의 북마크 첨삭하게 하는 기능
     @Transactional
     public void toggleBookmark(Long postId) {
         User user = securityUtil.getCurrentUser();
+
         Post post = postRepository.findByIdWithLock(postId)
-                .orElseThrow(() -> new PostNotFoundException("즐겨착기할, 해당 게시글 없음"));
+                .orElseThrow(() -> new PostNotFoundException("게시글 없음"));
 
         bookmarkRepository.findByPostIdAndUserId(postId, user.getId())
                 .ifPresentOrElse(
                         bookmark -> {
                             bookmarkRepository.delete(bookmark);
-                            bookmarkRepository.minusBookmark(postId);
+                            post.getPostBookmark().remove(bookmark);
+                            post.setBookmarks(Math.max(0, post.getBookmarks() - 1));
                         },
                         () -> {
-                            bookmarkRepository.save(new PostBookmark(post, user));
-                            bookmarkRepository.addBookmark(postId);
+                            PostBookmark newBookmark = new PostBookmark(post, user);
+                            bookmarkRepository.save(newBookmark);
+                            post.getPostBookmark().add(newBookmark);
+                            post.setBookmarks(post.getBookmarks() + 1);
                         }
                 );
     }
