@@ -24,8 +24,6 @@ public interface PostViewRepository extends JpaRepository<PostView, Long> {
     @Query("SELECT DISTINCT pv.post FROM PostView pv WHERE pv.user.id = :user_id ORDER BY pv.createAt DESC ")
     Page<Post> findAllPostsByUserIdSortRecentViewed(Pageable pageable, @Param("user_id") Long user_id);
 
-    Optional<PostView> findByPostAndUser(Post post, User user)
-
     Optional<PostView> findTopByPostAndUserAndCreatedAtAfterOrderByCreatedAtDesc(
             Post post,
             User user,
