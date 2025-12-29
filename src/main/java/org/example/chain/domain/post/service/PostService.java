@@ -58,6 +58,9 @@ public class PostService {
                 .user(user)
                 .images(new HashSet<>())
                 .postTags(new HashSet<>())
+                .likes(0L)
+                .bookmarks(0L)
+                .views(0L)
                 .build();
 
         Post savedPost = postRepository.save(post);
