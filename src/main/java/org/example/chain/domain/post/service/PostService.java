@@ -352,18 +352,20 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("좋아요할, 해당 게시글 없음"));
 
+        long currentLikes = (post.getLikes() == null) ? 0L : post.getLikes();
+
         postLikeRepository.findByPostIdAndUserId(postId, user.getId())
                 .ifPresentOrElse(
                         like -> {
                             postLikeRepository.delete(like);
                             post.getPostLikes().remove(like);
-                            post.setBookmarks(Math.max(0, post.getLikes() - 1));
+                            post.setBookmarks(Math.max(0, currentLikes - 1));
                         },
                         () -> {
                             PostLike newLike = new PostLike(post, user);
                             postLikeRepository.save(newLike);
                             post.getPostLikes().add(newLike);
-                            post.setLikes(post.getLikes() + 1);
+                            post.setLikes(currentLikes + 1);
                         }
                 );
     }
