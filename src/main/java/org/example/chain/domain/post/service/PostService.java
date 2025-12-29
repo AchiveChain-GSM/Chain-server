@@ -196,24 +196,16 @@ public class PostService {
         Post post = postRepository.findByIdWithDetails(postId)
                 .orElseThrow(() -> new PostNotFoundException("해당 자료를 찾을 수 없습니댜."));
 
-        List<PostComment> comments =
-                postCommentRepository.findByPostId(postId);
-
+        List<PostComment> comments = postCommentRepository.findByPostId(postId);
         Map<Long, String> images = getImageUrls(post);
 
         //조회수 증가
         postRepository.updateViews(postId);
-        entityManager.clear();
 
         long likes = postLikeRepository.countByPost(post);
         long bookmarks = postBookmarkRepository.countByPost(post);
 
-        User user = null;
-        try {
-            user = securityUtil.getCurrentUser();
-        } catch (Exception e) {
-            // X
-        }
+        User user = securityUtil.getCurrentUser();
 
         if (user != null) {
             try {
@@ -230,14 +222,12 @@ public class PostService {
         boolean isLiked = false;
         boolean isBookmarked = false;
 
-        if (user != null) {
-            // 기존에 만들어둔 헬퍼 메서드 활용
-            Set<Long> likedIds = likedPostIds(user.getId());
-            Set<Long> bookmarkedIds = bookmarkedPostIds(user.getId());
+        // 기존에 만들어둔 헬퍼 메서드 활용
+        Set<Long> likedIds = likedPostIds(user.getId());
+        Set<Long> bookmarkedIds = bookmarkedPostIds(user.getId());
 
-            isLiked = isLiked(postId, likedIds);
-            isBookmarked = isBookmarked(postId, bookmarkedIds);
-        }
+        isLiked = isLiked(postId, likedIds);
+        isBookmarked = isBookmarked(postId, bookmarkedIds);
 
         log.info("자료 상세 조회 완료");
         return PostDetailReadRes.from(post, comments, images, isLiked, isBookmarked, likes, bookmarks);

@@ -46,6 +46,7 @@ public record PostDetailReadRes(
                         post.getPostTags()
                                 .stream()
                                 .map(pt -> pt.getTag().getName())
+                                .distinct()
                                 .toList()
                 )
                 .images(images)
