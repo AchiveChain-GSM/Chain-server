@@ -217,7 +217,7 @@ public class PostService {
 
                 // 2. 오늘 이 게시물을 본 기록이 있는지 조회
                 Optional<PostView> existingView = postViewRepository
-                        .findTopByPostAndUserAndCreatedAtAfterOrderByCreatedAtDesc(post, user, startOfToday);
+                        .findTopByPostAndUserAndCreateAtAfterOrderByCreateAtDesc(post, user, startOfToday);
 
                 if (existingView.isEmpty()) {
                     // 오늘 본 기록이 없으면? 조회수 올리고 저장
