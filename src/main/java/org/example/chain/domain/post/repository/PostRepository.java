@@ -33,8 +33,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 단건 조회 시 모든 정보를 한 번에 가져옴
     @Query("""
-        SELECT DISTINCT p
-        FROM Post p
+        SELECT DISTINCT p FROM Post p
         LEFT JOIN FETCH p.user
         LEFT JOIN FETCH p.images
         LEFT JOIN FETCH p.postTags pt
