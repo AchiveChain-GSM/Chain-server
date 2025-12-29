@@ -8,6 +8,7 @@ import org.example.chain.domain.post.entity.PostView;
 import org.example.chain.domain.user.data.request.SignUpReq;
 import org.example.chain.domain.user.data.request.UpdateReq;
 import org.example.chain.domain.user.enums.Authority;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Getter
+@BatchSize(size = 100)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
