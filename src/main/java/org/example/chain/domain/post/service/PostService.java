@@ -23,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.time.Instant;
 import java.util.stream.Collectors;
@@ -202,13 +204,38 @@ public class PostService {
         List<PostComment> comments = postCommentRepository.findByPostId(postId);
         Map<Long, String> images = getImageUrls(post);
 
-        //조회수 증가
-        postRepository.updateViews(postId);
-
         long likes = postLikeRepository.countByPost(post);
         long bookmarks = postBookmarkRepository.countByPost(post);
 
         User user = securityUtil.getCurrentUser();
+        if (user != null) {
+            try {
+                // 1. 오늘 자정(00:00:00) 시간 구하기
+                Instant startOfToday = LocalDate.now()
+                        .atStartOfDay(ZoneId.systemDefault())
+                        .toInstant();
+
+                // 2. 오늘 이 게시물을 본 기록이 있는지 조회
+                Optional<PostView> existingView = postViewRepository
+                        .findTopByPostAndUserAndCreatedAtAfterOrderByCreatedAtDesc(post, user, startOfToday);
+
+                if (existingView.isEmpty()) {
+                    // 오늘 본 기록이 없으면? 조회수 올리고 저장
+                    postRepository.updateViews(postId);
+
+                    PostView view = PostView.builder()
+                            .post(post)
+                            .user(user)
+                            .build();
+                    postViewRepository.save(view);
+                    log.info("오늘 첫 조회: 조회수 증가 및 기록 저장");
+                } else {
+                    log.info("오늘 이미 조회한 게시글입니다.");
+                }
+            } catch (Exception e) {
+                log.error("최근 본 자료 처리 중 오류", e);
+            }
+        }
 
         if (user != null) {
             try {
