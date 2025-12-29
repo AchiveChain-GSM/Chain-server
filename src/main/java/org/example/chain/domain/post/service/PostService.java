@@ -56,7 +56,7 @@ public class PostService {
                 .title(request.title())
                 .content(request.content())
                 .user(user)
-                .images(new ArrayList<>())
+                .images(new HashSet<>())
                 .postTags(new HashSet<>())
                 .build();
 
@@ -122,7 +122,7 @@ public class PostService {
     }
 
     //게시물 내 삭제할 이미지 목록을 가지고 S3 내에서도, 게시물 자체에서도 삭제
-    void removeImagesInPost(Post post, List<Image> removeImages) {
+    void removeImagesInPost(Post post, Set<Image> removeImages) {
         for(var removeImage : removeImages) {
             s3Service.delete(removeImage.getImageKey());
         }
