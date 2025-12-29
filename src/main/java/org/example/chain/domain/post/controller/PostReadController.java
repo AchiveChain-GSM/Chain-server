@@ -205,9 +205,12 @@ public class PostReadController {
     //지정한 기간 동안 생성된 게시물 조회 페이지
     @PostMapping("/timeline")
     public ResponseEntity<Page<PostReadRes>> readTimelinePosts(
-            @RequestBody TimelinePostReq timelinePostReq, Pageable pageable) {
-        log.info("타임라인");
+            @RequestBody TimelinePostReq timelinePostReq,
+            @PageableDefault(size = 100, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        log.info("타임라인 조회 - 페이지 번호: {}", pageable.getPageNumber());
         Page<PostReadRes> posts = postService.readAllPostsInDuration(timelinePostReq.from(), timelinePostReq.to(), pageable);
+
         log.info("타임라인 완료");
         return ResponseEntity.ok(posts);
     }
