@@ -39,12 +39,14 @@ public class Post {
     @Column(name = "create_at", updatable = false)
     private Instant createAt;
 
+    @Builder.Default
     @ColumnDefault("0")
-    @Column(name = "likes")
+    @Column(name = "likes", nullable = false)
     private Long likes = 0L;
 
+    @Builder.Default
     @ColumnDefault("0")
-    @Column(name = "bookmarks")
+    @Column(name = "bookmarks", nullable = false)
     private Long bookmarks = 0L;
 
     @Builder.Default
@@ -53,25 +55,31 @@ public class Post {
     private Set<PostTag> postTags = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = true)
+    @JoinColumn(name = "user_id")
+    @BatchSize(size = 100)
     private User user;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PostLike> postLikes = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @BatchSize(size = 100)
     private List<PostComment> postComments = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PostBookmark> postBookmark = new ArrayList<>();
 
+    @Builder.Default
     @ColumnDefault("0")
-    @Column(name = "views")
+    @Column(name = "views", nullable = false)
     private Long views = 0L;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PostView> postViews = new ArrayList<>();
 
+    @Builder.Default
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Image> images = new HashSet<>();
 

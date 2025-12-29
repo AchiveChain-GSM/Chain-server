@@ -35,7 +35,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
         SELECT DISTINCT p FROM Post p
         LEFT JOIN FETCH p.user
-        LEFT JOIN FETCH p.images
         LEFT JOIN FETCH p.postTags pt
         LEFT JOIN FETCH pt.tag
         WHERE p.id = :postId
